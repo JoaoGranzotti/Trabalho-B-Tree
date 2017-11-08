@@ -3,24 +3,17 @@
 
 #define ORDEM 5
 
-typedef struct {
-    int numeroChaves;
-    int chaves[ORDEM-1][2];
-    int folha;
-    int filhos[ORDEM];
-} PAGINA;
-
 int main(){
-    int i, j;
-    int id, offSet;
-    FILE *arq = fopen ("arvore.idx", "r+");
-    while(1){
-        printf("id e offSet\n");
-        scanf("%d %d", &id, &offSet);
-        inserirArvoreB(id, offSet, 0)
-    }
-
-
-
-    return 0;
+    FILE *arquivo;
+        arquivo = fopen ("testinho.dad", "wb");
+        if (arquivo == NULL) {
+            printf ("Houve um erro ao abrir o arquivo.\n");
+        return;
+        }
+    char dadoLido [16];
+    char stringzinha[] = "paçoca";
+    fwrite(&stringzinha, sizeof(stringzinha), 1, arquivo);
+    //fseek(arquivo, 0, SEEK_CUR);
+    //fread(dadoLido, 15, 1, arquivo);
+    //printf("\n%s\n",dadoLido);
 }

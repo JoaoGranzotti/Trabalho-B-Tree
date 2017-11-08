@@ -27,8 +27,7 @@ int main(){
         fflush(stdin);
         switch(escolhaMenu){
         case 1:
-            lerArquivoDeDados();
-            //criarArquivoDeIndices();
+            criarArquivoDeIndice();
             break;
         case 2:
             system("CLS");

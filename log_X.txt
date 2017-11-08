@@ -1,1 +1,27 @@
 Execucao de operacao de INSERCAO de 10, pepino, chavasca.
+Execucao de operacao de INSERCAO de 8, BUXAS, aasd.
+Execucao de operacao de INSERCAO de 5, abcd, asf.
+Execucao de operacao de INSERCAO de 5, asdasd, ADASDASD.
+Execucao de operacao de INSERCAO de 10, asdasdas, asfasfasf.
+Execucao de operacao de INSERCAO de 81, asfdffg, SEREWRWER.
+Execucao de operacao de INSERCAO de 26, sdfsfsdfs, sdfsdfsdfsdf.
+Execucao de operacao de INSERCAO de 0, a, b.
+Execucao de operacao de INSERCAO de 5, llk, kllj.
+Execucao de operacao de INSERCAO de 5, sdgfh, sdfg.
+Execucao de operacao de INSERCAO de 5, dfh, fsgh.
+Execucao de operacao de INSERCAO de 5, sdf, sdf.
+Execucao de operacao de INSERCAO de 5, asdfas, asdfasdf.
+Execucao de operacao de INSERCAO de 10, asdf, qwerqwerqwer.
+Execucao de operacao de INSERCAO de 0, cafune, samba.
+Execucao de operacao de INSERCAO de 1, peteleco, pagode.
+Execucao de operacao de INSERCAO de 2, Da nela sim, coco.
+Execucao de operacao de INSERCAO de 3, abcd, efgh.
+Execucao de operacao de INSERCAO de 5, asd, asd.
+Execucao de operacao de INSERCAO de 1, adfgdfg, sdfgsdfgdfg.
+Execucao de operacao de INSERCAO de 5, asd, asd.
+Execucao de operacao de INSERCAO de 5, abcde, fghi.
+Execucao de operacao de INSERCAO de 10, elaela, aaaaaaaa.
+Execucao de operacao de INSERCAO de 0, sabia, sertanejo.
+Execucao de operacao de INSERCAO de 2, bailando, dewbon.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao de operacao de INSERCAO de 5, abcd, efgh.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.

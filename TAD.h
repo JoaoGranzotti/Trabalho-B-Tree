@@ -42,10 +42,10 @@ void atualizaArquivoDeLog(char nomeArquivoLog[], char linhaAdicionada[]){
 //###############################
 
 // vai pegar as informações do arquivo de dados para criar a partir dele o arquivo de indices
-void lerArquivoDeDados(){
+void criarArquivoDeIndice(){
     FILE *arqdados, *arqind;
-    arqdados = fopen ("dados.dad", "r");
-    arqind = fopen ("arvore.idx", "w");
+    arqdados = fopen ("dados.dad", "rb");
+    arqind = fopen ("arvore.idx", "ab");
 
     if (arqdados == NULL) {
        printf ("Houve um erro ao abrir o arquivo de dados.\n");
@@ -55,11 +55,18 @@ void lerArquivoDeDados(){
         printf ("Houve um erro ao abrir o arquivo de indices.\n");
         return;
     }
+    char dadoLido[3];
     int id;
-    int offSet = 0;
-    while(!fseek(arqdados, offSet, SEEK_CUR)){
-        fscanf(arqdados, "%d|%d", &offSet, &id);
-        //função inserir
+    int tamanho = 0;
+    int offSet = 0;//esse aqui vai guardar o endereço final pra acesso direto
+    fseek(arqdados, tamanho, SEEK_CUR);
+    while(fread(dadoLido, 3, 1, arqdados) != 0){
+        fseek(arqdados, -2, SEEK_CUR);
+        id = dadoLido[2];
+        offSet = tamanho+1;
+        tamanho = dadoLido[0];
+        fseek(arqdados, tamanho, SEEK_CUR);
+        //função inserirArvoreB
     }
 
     char mensagem[] = "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.";
@@ -93,24 +100,21 @@ void inserirMusica(tRegistro novoRegistro){
     novoRegistro.genero[strcspn(novoRegistro.genero, "\n")] = 0;
 
     char stringConcatenada[64] = "|";
-    char idConvertido[4];
-    sprintf(idConvertido, "%d", novoRegistro.id);
-    strcat(stringConcatenada, idConvertido);
-    strcat(stringConcatenada, "|");
     strcat(stringConcatenada, novoRegistro.titulo);
     strcat(stringConcatenada, "|");
     strcat(stringConcatenada, novoRegistro.genero);
     strcat(stringConcatenada, "|");
 
-    int tamanhoString = strlen(stringConcatenada);
-    char tamanhoStringConvertido[64];
-    sprintf(tamanhoStringConvertido, "%d", tamanhoString);
-    strcat(tamanhoStringConvertido, stringConcatenada);
-    //agora a nossa string a ser salva ta guardada em tamanhoStringConvertido
+    //a partir daqui a string esta no padrao desejado !!!
+    int tamanho = strlen(stringConcatenada);
+    int tamanhoTotal = tamanho + 2;
+    char pipe = '|';
 
-    int tamanhoTotal = strlen(tamanhoStringConvertido);
     //salvando no arquivo de dados
-    fwrite(&tamanhoStringConvertido, tamanhoTotal, 1, arquivo);
+    fwrite(&tamanhoTotal, 1, 1, arquivo);
+    fwrite(&pipe, sizeof(pipe), 1, arquivo);
+    fwrite(&novoRegistro.id, 1, 1, arquivo);
+    fwrite(&stringConcatenada, tamanho, 1, arquivo);
     printf ("Arquivo de 'dados' atualizado com sucesso.\n");
     fclose (arquivo);
 
