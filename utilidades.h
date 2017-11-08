@@ -7,7 +7,7 @@
 int verificaEntrada(char texto[]){
     int i = 0;
     char elemento = texto[i];
-    while(elemento != '\0'){
+    while(elemento != '\n'){
         if((elemento >= 'a' && elemento <= 'z')||(elemento >= 'A' && elemento <= 'Z')){
             i++;
             elemento = texto[i];
@@ -21,7 +21,7 @@ int verificaEntrada(char texto[]){
                     i++;
                     elemento = texto[i];
                 }else{
-                    printf("Entrada inválida. '%c'\n", elemento);
+                    printf("Entrada inválida. '%c', na posicao '%d'\n", elemento, i);
                     return 0;
                 }
             }

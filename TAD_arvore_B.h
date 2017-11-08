@@ -24,7 +24,7 @@ typedef struct Pagina{
 void inserirEmDisco(PAGINA atual, int RRN, FILE *arqInd){
     int i;
     fseek(arqInd, 2, SEEK_SET);
-    fseek(arqInd, RRN*tamanhoPagina, SEEK_CUR);
+//    fseek(arqInd, RRN*tamanhoPagina, SEEK_CUR);
     fprintf(arqInd, "%d|", atual.numeroChaves);
     for(i = 0; i < ORDEM-1; i++){
         fprintf(arqInd, "%d/%d/", atual.chaves[i][0],  atual.chaves[i][1]);

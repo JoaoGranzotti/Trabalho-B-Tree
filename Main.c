@@ -7,6 +7,7 @@ int main(){
     char nomeArquivoLog[] = "log_X.txt";
     char nomeArquivoDados[] = "dados.dad";
     char nomeArquivoIndice[] = "arvore.idx";
+    char entrada[100];
 
     int rodando = 1;
     int entradaValida = 0;
@@ -23,10 +24,11 @@ int main(){
         printf("5. Mostrar Arvore-B.\n");
         printf("6. Fechar o programa.\n");
         scanf("%d", &escolhaMenu);
+        fflush(stdin);
         switch(escolhaMenu){
         case 1:
             lerArquivoDeDados();
-            criarArquivoDeIndices();
+            //criarArquivoDeIndices();
             break;
         case 2:
             system("CLS");
@@ -34,24 +36,25 @@ int main(){
             tRegistro novoRegistro;
             while(entradaValida == 0){
                 printf("Digite um numero inteiro com ID da musica:\n");
-                char entrada[100];
-                scanf("%[^\n]s", entrada);
-                setbuf(stdin, NULL);
-                entradaValida = entradaValida + numeroOuChar(entrada);
-                novoRegistro.id = (int)entrada;
+                scanf("%d", &novoRegistro.id);
+                fflush(stdin);
+                entradaValida = 1;
             }
             while(entradaValida == 1){
                 printf("Digite o titulo da musica:\n");
-                scanf("%[^\n]s", novoRegistro.titulo);
-                setbuf(stdin, NULL);
+                fgets(novoRegistro.titulo, 30, stdin);
+                //scanf("%[^\n]s", novoRegistro.titulo);
+                //setbuf(stdin, NULL);
                 entradaValida = entradaValida + verificaEntrada(novoRegistro.titulo);
             }
             while(entradaValida == 2){
                 printf("Digite o genero da musica:\n");
-                scanf("%[^\n]s", novoRegistro.genero);
-                setbuf(stdin, NULL);
+                fgets(novoRegistro.genero, 20, stdin);
+                //scanf("%[^\n]s", novoRegistro.genero);
+                //setbuf(stdin, NULL);
                 entradaValida = entradaValida + verificaEntrada(novoRegistro.genero);
             }
+            //problema aqui
             inserirMusica(novoRegistro);
             entradaValida = 0;
             break;
