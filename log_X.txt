@@ -24,4 +24,5 @@ Execucao de operacao de INSERCAO de 10, elaela, aaaaaaaa.
 Execucao de operacao de INSERCAO de 0, sabia, sertanejo.
 Execucao de operacao de INSERCAO de 2, bailando, dewbon.
 Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao de operacao de INSERCAO de 5, abcd, efgh.
-Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao de operacao de INSERCAO de 10, banana, nanica.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.

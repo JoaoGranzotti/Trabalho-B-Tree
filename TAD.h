@@ -59,14 +59,22 @@ void criarArquivoDeIndice(){
     int id;
     int tamanho = 0;
     int offSet = 0;//esse aqui vai guardar o endereço final pra acesso direto
+    int raiz;
     fseek(arqdados, tamanho, SEEK_CUR);
     while(fread(dadoLido, 3, 1, arqdados) != 0){
         fseek(arqdados, -2, SEEK_CUR);
         id = dadoLido[2];
         offSet = tamanho+1;
         tamanho = dadoLido[0];
-        fseek(arqdados, tamanho, SEEK_CUR);
+        fseek(arqind, tamanho, SEEK_CUR);
+        fread(dadoLido, 3, 1, arqind);
+        raiz = dadoLido[0];
+        //pegando a raiz
+        fseek(arqind, 1, SEEK_SET);
+
         //função inserirArvoreB
+        //temos o ID OFFSET RAIZ
+        inserirArvoreB(id, offSet, raiz, raiz, arqind, arqdados);
     }
 
     char mensagem[] = "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.";
@@ -74,18 +82,6 @@ void criarArquivoDeIndice(){
     fclose (arqdados);
     fclose (arqind);
 }
-
-
-// Não sei se vai usar, mas complementa a função acima
-/*void criarArquivoDeIndices(){
-    //aqui vai o codigo
-
-
-    //Essa parte escreve o que foi feito no arquivo de log
-    char mensagem[] = "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.";
-    atualizaArquivoDeLog("log_X.txt", mensagem);
-}*/
-
 
 //Insere as musicas no arquivo de dados.dad
 void inserirMusica(tRegistro novoRegistro){

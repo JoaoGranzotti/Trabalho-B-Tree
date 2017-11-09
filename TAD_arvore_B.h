@@ -41,38 +41,40 @@ void buscar(int id_no){
 }
 
 // não sei se vai precisar, mas essa função vai fazer todos os passos da criação da arvore
-void inserirArvoreB(int id, int offSet, int RRN, FILE *arqInd, FILE *arqDados){
-    if(offSet == 0){
+void inserirArvoreB(int id, int offSet, int RRN, int raiz, FILE *arqInd, FILE *arqDados){
+    if(raiz == -1){
         //INSERE NÓ RAIZ
         //criando a pagina onde o no raiz vai ficar
         //precisa criar ??
 
-        fprintf(arqInd, "1\n");
-        fprintf(arqInd, "1|%d/%d/-1/-1/-1/-1/-1/-1|-1/-1/-1/-1/-1/1/\n", id, offSet);
+        //fprintf(arqInd, "1\n");
+        //fprintf(arqInd, "1|%d/%d/-1/-1/-1/-1/-1/-1|-1/-1/-1/-1/-1/1/\n", id, offSet);
         //numChaves|id/offset/...|RRNfilho/.../folha/\n
     }
-    else{ //NCHAVES|chave1|chave2|chave3|filhos|
-        //busca a posição que queremos com busca binaria
-        //PAGINA buscado = buscar(id);
+    else{
+        //NCHAVES|chave1|chave2|chave3|filhos|folha
 
-        //tem que ler do aruivo de indice pra criar a pagina ??
-        int numChaves, i;
-        fseek(arqDados, offSet, SEEK_CUR);
+        //tem que ler do aruivo de indice pra criar a pagina
+        int numChaves, i, j;
         PAGINA atual;
-        fscanf(arqInd, "1|%d", &atual.numeroChaves);
-        for(i = 0; i < 4; i++){
-            fscanf(arqInd, "/%d/%d", &atual.chaves[i][0], &atual.chaves[i][1]);
+        char linhaLida[30];//tamanho fixo das linhas
+        fread(linhaLida, sizeof(linhaLida), 1, arqInd);
+        atual.numeroChaves = linhaLida[0];
+        j = 0;
+        for(i=2; i<=14; i+4){
+            atual.chaves[j][0] = linhaLida[i];
+            atual.chaves[j][1] = linhaLida[i+2];
+            j++;
         }
-
-        fgetc(arqInd);
-        for(i = 0; i < 5; i++){
-            fscanf(arqInd, "%d/", &atual.filhos[i]);
+        j=0
+        for(i=18; i<=26; i+2){
+            atual.filhos[j] = linhaLida[i];
+            j++;
         }
-
-        fscanf(arqInd, "%d/", &atual.folha);
-
+        atual.folha = linhaLida[29]
         //a partir daqui ja tem a pagina bunitin
-        //agora vamos fazer uma busca binaria nas chaves pra saber onde tem que ir ou onde daria pra insserir
+
+        //Agora vamos ver se é folha ou não, se for manda bala pra inserir, se não vamo procurar uma que seja
         //aqui é busca sequencial
         for(i = 0; i < atual.numeroChaves; i++){
             if(atual.chaves[i][0] > id)
@@ -96,7 +98,7 @@ void inserirArvoreB(int id, int offSet, int RRN, FILE *arqInd, FILE *arqDados){
                     atual.chaves[i+1][1] = vetor[i][1];
                 }
                 atual.numeroChaves++;
-                inserirEmDisco(atual, RRN, arqInd);
+                inserirEmDisco(atual, RRN, arqInd);// essa função tem que ser arrumada !!!!
             }
             else{
                 //split
