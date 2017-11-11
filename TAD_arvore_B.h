@@ -24,40 +24,77 @@ typedef struct Pagina{
 //Função que exporta da memória para o disco
 //recebe a pagina a ser inserida, a posicao em que devemos inseri-la e o arquivo
 int inserirEmDisco(PAGINA atual, int RRN, FILE *arqInd){
-    int i;
-    char nChaves[1];
+    int i, j;
+
+    char pipe[1] = "|";
+    char barra[1] = "/";
+
+    fseek(arqInd, RRN, SEEK_SET);
+    fwrite(&atual.numeroChaves, 1, 1, arqInd);
+    fwrite(&pipe, 1, 1, arqInd);
+    for(i=0; i<(ORDEM-1); i++){
+        j = i;
+        fwrite(&atual.chaves[j][0], 1, 1, arqInd);
+        fwrite(&barra, 1, 1, arqInd);
+        fwrite(&atual.chaves[j][1], 1, 1, arqInd);
+        if(j != ORDEM-2){
+            fwrite(&barra, 1, 1, arqInd);
+        }
+        else{
+            fwrite(&pipe, 1, 1, arqInd);
+        }
+    }
+    for(i=0;i<=ORDEM-1;i++){
+        j = i;
+        fwrite(&atual.filhos[j], 1, 1, arqInd);
+        if(j!=ORDEM-1){
+            fwrite(&barra, 1, 1, arqInd);
+        }
+        else{
+            fwrite(&pipe, 1, 1, arqInd);
+        }
+    }
+    fwrite(&atual.folha, 1, 1, arqInd);
+    fwrite(&pipe, 1, 1, arqInd);
+
+    /*char nChaves[1];
     char chave[1];
     char filho[1];
     char folha[1];
-    char linhaAdicionada[TAMINDICE];
+    char linhaAdicionada[TAMINDICE] = "";
     sprintf(nChaves, "%d", atual.numeroChaves);
     //criando a string a ser escrita
     strcat(linhaAdicionada, nChaves);
     strcat(linhaAdicionada, "|");
-    for(i=0;i<=ORDEM-1;i++){
-        sprintf(chave, "%d", atual.chaves[i][0]);
+    printf("Essa eh a string: %s\n", linhaAdicionada);
+    for(i=0; i<(ORDEM-1); i++){
+        j = i;
+        sprintf(chave, "%d", atual.chaves[j][0]);
         strcat(linhaAdicionada, chave);
         strcat(linhaAdicionada, "/");
-        sprintf(chave, "%d", atual.chaves[i][1]);
+        sprintf(chave, "%d", atual.chaves[j][1]);
         strcat(linhaAdicionada, chave);
-        if(i!=ORDEM-1){
+        if(j != ORDEM-2){
             strcat(linhaAdicionada, "/");
         }
         else{
             strcat(linhaAdicionada, "|");
         }
+        printf("Essa eh a string: %s\n", linhaAdicionada);
     }
-    for(i=0;i<=ORDEM;i++){
-        sprintf(filho, "%d", atual.filhos);
+    for(i=0;i<=ORDEM-1;i++){
+        j = i;
+        sprintf(filho, "%d", atual.filhos[j]);
         strcat(linhaAdicionada, filho);
-        if(i!=ORDEM){
+        if(j!=ORDEM-1){
             strcat(linhaAdicionada, "/");
         }
         else{
             strcat(linhaAdicionada, "|");
         }
+        printf("Essa eh a string: %s\n", linhaAdicionada);
     }
-
+    printf("Essa eh a string: %s\n", linhaAdicionada);
     sprintf(folha, "%d", atual.folha);
     strcat(linhaAdicionada, folha);
     strcat(linhaAdicionada, "|");
@@ -66,6 +103,7 @@ int inserirEmDisco(PAGINA atual, int RRN, FILE *arqInd){
     //vamos guarda saporra agora !!!
     fseek(arqInd, RRN, SEEK_SET);
     fwrite(&linhaAdicionada, sizeof(linhaAdicionada), 1, arqInd);
+    */
     return RRN;
 }
 
@@ -136,12 +174,15 @@ void split(int id, int offSet, int RRN, PAGINA *atual, int *idPromovido, int *of
 int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP, FILE *arqInd){
     int i, j, valorRetorno;
     if(RRN == -1){
+        printf("chegou aqui");
         *idP = id;
         *offSetP = offSet;
         *RRNP = -1;
         return 1;
     }
     else{
+        printf("Ta entrando");
+        //arrumar a leitura dessa carralha
         //lendo pagina no RRN corrente
         PAGINA atual;
         char linhaLida[TAMINDICE];//tamanho fixo das linhas
@@ -171,6 +212,7 @@ int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP, FILE
             printf("JÁ TEM ESSE ID !!!");
         }
         else{
+            printf("Chegou nessa parte!!");
             valorRetorno = inserir(atual.filhos[i], id, offSet, RRNP, idP, offSetP, arqInd); /// os parametros 3 e 4
             if(valorRetorno == 0){
                 return 0;
