@@ -58,23 +58,27 @@ void criarArquivoDeIndice(){
     char dadoLido[3];
     int id;
     int tamanho = 0;
-    int offSet = 0;//esse aqui vai guardar o endereço final pra acesso direto
+    int offSet = 0;
     int raiz;
-    fseek(arqdados, tamanho, SEEK_CUR);
+    int *RRNP;
+    int *idP;
+    int *offSetP;
+    fseek(arqdados, 0, SEEK_SET);
     while(fread(dadoLido, 3, 1, arqdados) != 0){
         fseek(arqdados, -2, SEEK_CUR);
         id = dadoLido[2];
         offSet = tamanho+1;
-        tamanho = dadoLido[0];
-        fseek(arqind, tamanho, SEEK_CUR);
+        tamanho = dadoLido[0] + tamanho;
+        fseek(arqind, 0, SEEK_SET);
         fread(dadoLido, 3, 1, arqind);
         raiz = dadoLido[0];
         //pegando a raiz
         fseek(arqind, 1, SEEK_SET);
 
-        //função inserirArvoreB
         //temos o ID OFFSET RAIZ
-        inserirArvoreB(id, offSet, raiz, raiz, arqind, arqdados);
+        printf("antes da funcao inseir\n");
+        inserir(raiz, id, offSet, RRNP, idP, offSetP, arqind);
+        printf("depois da funcao inseir\n");
     }
 
     char mensagem[] = "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.";

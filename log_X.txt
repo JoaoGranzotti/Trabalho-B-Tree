@@ -25,4 +25,16 @@ Execucao de operacao de INSERCAO de 0, sabia, sertanejo.
 Execucao de operacao de INSERCAO de 2, bailando, dewbon.
 Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao de operacao de INSERCAO de 5, abcd, efgh.
 Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao de operacao de INSERCAO de 10, banana, nanica.
-Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.Execucao de operacao de INSERCAO de 0, Ola, MPB.
+Execucao de operacao de INSERCAO de 1, Vida Boa, Sertanejo.
+Execucao de operacao de INSERCAO de 2, Chora, Pagode.
+Execucao de operacao de INSERCAO de 3, Dia de Farra, Funk.
+Execucao de operacao de INSERCAO de 4, Choveu, Samba.
+Execucao de operacao de INSERCAO de 5, Pare, Raiz.
+Execucao de operacao de INSERCAO de 6, A, B.
+Execucao de operacao de INSERCAO de 7, C, D.
+Execucao de operacao de INSERCAO de 8, E, F.
+Execucao de operacao de INSERCAO de 9, G, H.
+Execucao de operacao de INSERCAO de 10, I, J.
+Execucao de operacao de INSERCAO de 11, K, L.
+Execucao de operacao de INSERCAO de 12, M, N.

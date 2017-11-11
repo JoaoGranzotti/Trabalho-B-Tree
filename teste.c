@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "TAD_arvore_B.h"
 
 #define ORDEM 5
 
@@ -12,8 +11,8 @@ int main(){
         }
     char dadoLido [16];
     char stringzinha[] = "paçoca";
+    char troca = 't';
     fwrite(&stringzinha, sizeof(stringzinha), 1, arquivo);
-    //fseek(arquivo, 0, SEEK_CUR);
-    //fread(dadoLido, 15, 1, arquivo);
-    //printf("\n%s\n",dadoLido);
+    fseek(arquivo, 3, SEEK_SET);
+    fwrite(&troca, sizeof(troca), 1, arquivo);
 }
