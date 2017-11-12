@@ -38,3 +38,4 @@ Execucao de operacao de INSERCAO de 9, G, H.
 Execucao de operacao de INSERCAO de 10, I, J.
 Execucao de operacao de INSERCAO de 11, K, L.
 Execucao de operacao de INSERCAO de 12, M, N.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.

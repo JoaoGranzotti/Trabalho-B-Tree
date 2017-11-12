@@ -71,36 +71,51 @@ void split(int id, int offSet, int RRN, PAGINA *atual, int *idPromovido, int *of
     //criando um esquema de suposta pagina temporaria com um espaço a mais
     int dados[5][2];
     int filhos[6];
-    int i, j;
+    int i, j, pos;
     //calculando a posição do dado novo na pagina temporaria
     i = 0;
     while(id > atual->chaves[i][0]){
-        i = i++;
+        i++;
     }
-
+    pos = i;
     //colocando os dados na suposta pagina temporaria
     for(j=0;j<i;j++){
         dados[j][0] = atual->chaves[j][0];
         dados[j][1] = atual->chaves[j][1];
     }
     //da um shift a partir do ponto i
-    for(j=ORDEM-1;j>i;j--){
+    for(j=ORDEM-2;j>i;j--){
         dados[j][0] = atual->chaves[j-1][0];
         dados[j][1] = atual->chaves[j-1][1];
     }
-    dados[i][0] = id;
-    dados[i][1] = offSet;
+    dados[pos][0] = id;
+    dados[pos][1] = offSet;
+
+
+    //testando se esta mesmo
+    for(i=0;i<5;i++){
+        printf("id: %d\n", dados[i][0]);
+        printf("offset: %d\n", dados[i][1]);
+    }
 
     //colocando os filhos tambem
-    for(j=0;j<i+1;j++){
+    for(j=0;j<pos+1;j++){
         filhos[j] = atual->filhos[j];
     }
     //da um shift a partir do ponto i
-    for(j=ORDEM;j>i+1;j--){
+    for(j=ORDEM-1;j>pos+1;j--){
         filhos[j] = atual->filhos[j-1];
     }
-    filhos[i+1] = RRN;//RRN
+    //filhos[pos+1] = RRN;//RRN /////////////@@@@@@@@@@@@@@@
+    filhos[pos+1] = *RRNP;
     //Daqui pra frente a pagina temporaria esta no formato desejado
+
+    //testando se esta mesmo
+    printf("\n\nSegunda verificacao:\n");
+    for(i=0;i<5;i++){
+        printf("id: %d\n", dados[i][0]);
+        printf("offset: %d\n", dados[i][1]);
+    }
 
     //vamos agora colocar os valores nas duas novas paginas de acordo com a regra
     *idPromovido = dados[2][0];  //2 é o valor do meio
@@ -111,20 +126,35 @@ void split(int id, int offSet, int RRN, PAGINA *atual, int *idPromovido, int *of
     novaPagina->chaves[0][0] = dados[3][0];
     novaPagina->chaves[0][1] = dados[3][1];
     novaPagina->chaves[1][0] = dados[4][0];
-    novaPagina->chaves[1][0] = dados[4][1];
+    novaPagina->chaves[1][1] = dados[4][1];
+    novaPagina->chaves[2][0] = 255;
+    novaPagina->chaves[2][1] = 255;
+    novaPagina->chaves[3][0] = 255;
+    novaPagina->chaves[3][1] = 255;
 
     atual->chaves[0][0] = dados[0][0];
-    atual->chaves[0][1] = dados[0][0];
+    atual->chaves[0][1] = dados[0][1];
     atual->chaves[1][0] = dados[1][0];
-    atual->chaves[1][1] = dados[1][0];
+    atual->chaves[1][1] = dados[1][1];
+    atual->chaves[2][0] = 255;
+    atual->chaves[2][1] = 255;
+    atual->chaves[3][0] = 255;
+    atual->chaves[3][1] = 255;
 
     atual->filhos[0] = filhos[0];
     atual->filhos[1] = filhos[1];
     atual->filhos[2] = filhos[2];
+    atual->filhos[3] = 255;
+    atual->filhos[4] = 255;
 
     novaPagina->filhos[0] = filhos[3];
     novaPagina->filhos[1] = filhos[4];
     novaPagina->filhos[2] = filhos[5];
+    novaPagina->filhos[3] = 255;
+    novaPagina->filhos[4] = 255;
+
+    atual->numeroChaves = 2;
+    novaPagina->numeroChaves = 2;
 }
 
 int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP){
@@ -132,13 +162,7 @@ int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP){
     FILE *arqInd;
     arqInd = fopen("arvore.idx", "rb");
     if(RRN == 255){
-        printf("Aqui eh o problema, pq esse comando nao funciona ??\n");
-        printf("Valor na variavel id: %d\n", id);
-        printf("Endereco dado pelo ponteiro idP: %d\n", idP);
-        printf("Valor guardado no endereco do ponteiro idP: %d\n", *idP);
-        //o comando abaixo não funciona e eu nao entendo o pq !!!
         *idP = id;
-        printf("Valor guardado no endereco do ponteiro idP: %d\n", *idP);
         *offSetP = offSet;
         *RRNP = -1;
         return 1;
@@ -169,6 +193,7 @@ int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP){
         //a partir daqui já tem a pagina bunitin
 
         //testando se pegou certo
+        /*
         printf("numero chaves: %d\n", atual.numeroChaves);
         for(i=0;i<4;i++){
             printf("id: %d, offset: %d\n", atual.chaves[i][0], atual.chaves[i][1]);
@@ -177,7 +202,7 @@ int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP){
             printf("filhos: %d\n", atual.filhos[i]);
         }
         printf("folha: %d\n", atual.folha);
-
+        */
 
         //Acha a posição
         i = 0;
@@ -198,6 +223,7 @@ int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP){
                     while(*idP > atual.chaves[i][0] && atual.chaves[i][0] != -1 && i < 4){
                         i++;
                     }
+                    atual.numeroChaves++;
                     //da um shift a partir do ponto i
                     for(j=ORDEM-1;j>i;j--){
                         atual.chaves[j][0] = atual.chaves[j-1][0];
@@ -217,14 +243,39 @@ int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP){
                         printf("filhos: %d\n", atual.filhos[i]);
                     }
                     printf("folha: %d\n", atual.folha);
+                    system("PAUSE");
                     inserirEmDisco(atual, RRN);
                     return 0;
                 }
                 else{
                     //parte do split, pika grossa e grande !!
                     PAGINA paginaNova;
+                    printf("Vai entrar no split\n");
                     split(*idP, *offSetP, RRN, &atual, idP, offSetP, RRNP, &paginaNova, arqInd);
+                    printf("Voltou do split\n");
+
+                    printf("Vai inserir no RRN %d seguinte dado:\n", RRN);
+                    printf("numero chaves: %d\n", atual.numeroChaves);
+                    for(i=0;i<4;i++){
+                        printf("id: %d, offset: %d\n", atual.chaves[i][0], atual.chaves[i][1]);
+                    }
+                    for(i=0;i<5;i++){
+                        printf("filhos: %d\n", atual.filhos[i]);
+                    }
+                    printf("folha: %d\n", atual.folha);
+                    system("PAUSE");
                     inserirEmDisco(atual, RRN);
+
+                    printf("Vai inserir no RRN %d seguinte dado:\n", RRN);
+                    printf("numero chaves: %d\n", paginaNova.numeroChaves);
+                    for(i=0;i<4;i++){
+                        printf("id: %d, offset: %d\n", paginaNova.chaves[i][0], paginaNova.chaves[i][1]);
+                    }
+                    for(i=0;i<5;i++){
+                        printf("filhos: %d\n", paginaNova.filhos[i]);
+                    }
+                    printf("folha: %d\n", paginaNova.folha);
+                    system("PAUSE");
                     inserirEmDisco(paginaNova, *RRNP);
                     return 1;
                 }

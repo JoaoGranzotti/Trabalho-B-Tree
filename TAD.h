@@ -63,6 +63,7 @@ void criarArquivoDeIndice(){
     int offSet = 0;
     int raiz;
     int *RRNP;
+    int *idPromo;
     int *idP;
     int *offSetP;
     printf("Enderecos rrnp, idp, offsetp: %d, %d, %d", RRNP, idP, offSetP);
@@ -117,7 +118,8 @@ void criarArquivoDeIndice(){
         printf("antes da funcao inseir\n");
         printf("Raiz: %d\nid: %d\noffset: %d\n", raiz, id, offSet);
         system("PAUSE");
-        splitouRiaz = inserir(raiz, id, offSet, RRNP, idP, offSetP);
+
+        splitouRiaz = inserir(raiz, id, offSet, RRNP, idPromo, offSetP);
         if(splitouRiaz == 1){
             atual.numeroChaves = 1;
             atual.chaves[0][0] = idP;
@@ -143,6 +145,7 @@ void criarArquivoDeIndice(){
             inserirEmDisco(atual, 3);
         }
         offSet = offSet + tamanho + 1;
+        fseek(arqdados, offSet, SEEK_SET);
         printf("depois da funcao inseir\n");
     }
 
