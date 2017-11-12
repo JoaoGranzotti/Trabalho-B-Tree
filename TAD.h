@@ -65,6 +65,7 @@ void criarArquivoDeIndice(){
     int *RRNP;
     int *idP;
     int *offSetP;
+    printf("Enderecos rrnp, idp, offsetp: %d, %d, %d", RRNP, idP, offSetP);
     //verifica se o arqInd esta vazio
     fseek(arqind, 0, SEEK_END);
     int temCoisa = ftell(arqind);
@@ -96,23 +97,27 @@ void criarArquivoDeIndice(){
         fwrite(&a, 1, 1, arqind);
         fwrite(&pipe, 1, 1, arqind);
         fwrite(&b, 1, 1, arqind);
-        inserirEmDisco(atual, 3, arqind);
+        inserirEmDisco(atual, 3);
     //}
-    fseek(arqdados, 1, SEEK_SET);
+    offSet = offSet + tamanho;
+    fseek(arqdados, offSet, SEEK_SET);
     while(fread(dadoLido, 3, 1, arqdados) != 0){
         fseek(arqdados, -2, SEEK_CUR);
         id = dadoLido[2];
-        offSet = tamanho+1;
-        tamanho = dadoLido[0] + tamanho;
+        tamanho = dadoLido[0];
+        //offSet = tamanho+1;
+        //tamanho = dadoLido[0] + tamanho;
         fseek(arqind, 0, SEEK_SET);
         fread(dadoLido, 3, 1, arqind);
         raiz = dadoLido[0];
         //pegando a raiz
-            fseek(arqind, 1, SEEK_SET);
+        fseek(arqind, 1, SEEK_SET);
 
         //temos o ID OFFSET RAIZ
         printf("antes da funcao inseir\n");
-        splitouRiaz = inserir(raiz, id, offSet, RRNP, idP, offSetP, arqind);
+        printf("Raiz: %d\nid: %d\noffset: %d\n", raiz, id, offSet);
+        system("PAUSE");
+        splitouRiaz = inserir(raiz, id, offSet, RRNP, idP, offSetP);
         if(splitouRiaz == 1){
             atual.numeroChaves = 1;
             atual.chaves[0][0] = idP;
@@ -135,11 +140,11 @@ void criarArquivoDeIndice(){
             fwrite(&a, 1, 1, arqind);
             fwrite(&pipe, 1, 1, arqind);
             fwrite(&b, 1, 1, arqind);
-            inserirEmDisco(atual, 3, arqind);
+            inserirEmDisco(atual, 3);
         }
+        offSet = offSet + tamanho + 1;
         printf("depois da funcao inseir\n");
     }
-
 
     char mensagem[] = "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.";
     atualizaArquivoDeLog("log_X.txt", mensagem);

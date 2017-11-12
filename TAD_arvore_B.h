@@ -23,7 +23,10 @@ typedef struct Pagina{
 
 //Função que exporta da memória para o disco
 //recebe a pagina a ser inserida, a posicao em que devemos inseri-la e o arquivo
-int inserirEmDisco(PAGINA atual, int RRN, FILE *arqInd){
+int inserirEmDisco(PAGINA atual, int RRN){
+    FILE *arqInd;
+    arqInd = fopen("arvore.idx", "rb+");
+
     int i, j;
 
     char pipe[1] = "|";
@@ -56,54 +59,7 @@ int inserirEmDisco(PAGINA atual, int RRN, FILE *arqInd){
     }
     fwrite(&atual.folha, 1, 1, arqInd);
     fwrite(&pipe, 1, 1, arqInd);
-
-    /*char nChaves[1];
-    char chave[1];
-    char filho[1];
-    char folha[1];
-    char linhaAdicionada[TAMINDICE] = "";
-    sprintf(nChaves, "%d", atual.numeroChaves);
-    //criando a string a ser escrita
-    strcat(linhaAdicionada, nChaves);
-    strcat(linhaAdicionada, "|");
-    printf("Essa eh a string: %s\n", linhaAdicionada);
-    for(i=0; i<(ORDEM-1); i++){
-        j = i;
-        sprintf(chave, "%d", atual.chaves[j][0]);
-        strcat(linhaAdicionada, chave);
-        strcat(linhaAdicionada, "/");
-        sprintf(chave, "%d", atual.chaves[j][1]);
-        strcat(linhaAdicionada, chave);
-        if(j != ORDEM-2){
-            strcat(linhaAdicionada, "/");
-        }
-        else{
-            strcat(linhaAdicionada, "|");
-        }
-        printf("Essa eh a string: %s\n", linhaAdicionada);
-    }
-    for(i=0;i<=ORDEM-1;i++){
-        j = i;
-        sprintf(filho, "%d", atual.filhos[j]);
-        strcat(linhaAdicionada, filho);
-        if(j!=ORDEM-1){
-            strcat(linhaAdicionada, "/");
-        }
-        else{
-            strcat(linhaAdicionada, "|");
-        }
-        printf("Essa eh a string: %s\n", linhaAdicionada);
-    }
-    printf("Essa eh a string: %s\n", linhaAdicionada);
-    sprintf(folha, "%d", atual.folha);
-    strcat(linhaAdicionada, folha);
-    strcat(linhaAdicionada, "|");
-    //daqui pra baixo a estring ta pronta
-
-    //vamos guarda saporra agora !!!
-    fseek(arqInd, RRN, SEEK_SET);
-    fwrite(&linhaAdicionada, sizeof(linhaAdicionada), 1, arqInd);
-    */
+    fclose(arqInd);
     return RRN;
 }
 
@@ -171,37 +127,57 @@ void split(int id, int offSet, int RRN, PAGINA *atual, int *idPromovido, int *of
     novaPagina->filhos[2] = filhos[5];
 }
 
-int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP, FILE *arqInd){
+int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP){
     int i, j, valorRetorno;
-    if(RRN == -1){
-        printf("chegou aqui");
+    FILE *arqInd;
+    arqInd = fopen("arvore.idx", "rb");
+    if(RRN == 255){
+        printf("Aqui eh o problema, pq esse comando nao funciona ??\n");
+        printf("Valor na variavel id: %d\n", id);
+        printf("Endereco dado pelo ponteiro idP: %d\n", idP);
+        printf("Valor guardado no endereco do ponteiro idP: %d\n", *idP);
+        //o comando abaixo não funciona e eu nao entendo o pq !!!
         *idP = id;
+        printf("Valor guardado no endereco do ponteiro idP: %d\n", *idP);
         *offSetP = offSet;
         *RRNP = -1;
         return 1;
     }
     else{
-        printf("Ta entrando");
         //arrumar a leitura dessa carralha
         //lendo pagina no RRN corrente
         PAGINA atual;
-        char linhaLida[TAMINDICE];//tamanho fixo das linhas
+        int temporario, testa;
         fseek(arqInd, RRN, SEEK_SET);
-        fread(&linhaLida, sizeof(linhaLida), 1, arqInd);
-        atual.numeroChaves = linhaLida[0];
-        j = 0;
-        for(i=2; i<=14; i+4){
-            atual.chaves[j][0] = linhaLida[i];
-            atual.chaves[j][1] = linhaLida[i+2];
-            j++;
+        fread(&temporario, 1, 1, arqInd);
+        atual.numeroChaves = temporario;
+        fseek(arqInd, 1, SEEK_CUR);
+        for(i=0;i<4;i++){
+            fread(&temporario, 1, 1, arqInd);
+            atual.chaves[i][0] = temporario;
+            fseek(arqInd, 1, SEEK_CUR);
+            fread(&temporario, 1, 1, arqInd);
+            atual.chaves[i][1] = temporario;
+            fseek(arqInd, 1, SEEK_CUR);
         }
-        j = 0;
-        for(i=18; i<=26; i+2){
-            atual.filhos[j] = linhaLida[i];
-            j++;
+        for(i=0;i<5;i++){
+            fread(&temporario, 1, 1, arqInd);
+            atual.filhos[i] = temporario;
+            fseek(arqInd, 1, SEEK_CUR);
         }
-        atual.folha = linhaLida[29];
+        fread(&atual.folha, 1, 1, arqInd);
         //a partir daqui já tem a pagina bunitin
+
+        //testando se pegou certo
+        printf("numero chaves: %d\n", atual.numeroChaves);
+        for(i=0;i<4;i++){
+            printf("id: %d, offset: %d\n", atual.chaves[i][0], atual.chaves[i][1]);
+        }
+        for(i=0;i<5;i++){
+            printf("filhos: %d\n", atual.filhos[i]);
+        }
+        printf("folha: %d\n", atual.folha);
+
 
         //Acha a posição
         i = 0;
@@ -212,8 +188,7 @@ int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP, FILE
             printf("JÁ TEM ESSE ID !!!");
         }
         else{
-            printf("Chegou nessa parte!!");
-            valorRetorno = inserir(atual.filhos[i], id, offSet, RRNP, idP, offSetP, arqInd); /// os parametros 3 e 4
+            valorRetorno = inserir(atual.filhos[i], id, offSet, RRNP, idP, offSetP); /// os parametros 3 e 4
             if(valorRetorno == 0){
                 return 0;
             }
@@ -233,15 +208,24 @@ int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP, FILE
                     for(j=0;j<ORDEM;j++){
                         atual.filhos[j] = -1;
                     }
-                    inserirEmDisco(atual, RRN, arqInd);
+                    printf("Vai inserir no RRN %d seguinte dado:\n", RRN);
+                    printf("numero chaves: %d\n", atual.numeroChaves);
+                    for(i=0;i<4;i++){
+                        printf("id: %d, offset: %d\n", atual.chaves[i][0], atual.chaves[i][1]);
+                    }
+                    for(i=0;i<5;i++){
+                        printf("filhos: %d\n", atual.filhos[i]);
+                    }
+                    printf("folha: %d\n", atual.folha);
+                    inserirEmDisco(atual, RRN);
                     return 0;
                 }
                 else{
                     //parte do split, pika grossa e grande !!
                     PAGINA paginaNova;
                     split(*idP, *offSetP, RRN, &atual, idP, offSetP, RRNP, &paginaNova, arqInd);
-                    inserirEmDisco(atual, RRN, arqInd);
-                    inserirEmDisco(paginaNova, *RRNP, arqInd);
+                    inserirEmDisco(atual, RRN);
+                    inserirEmDisco(paginaNova, *RRNP);
                     return 1;
                 }
             }
