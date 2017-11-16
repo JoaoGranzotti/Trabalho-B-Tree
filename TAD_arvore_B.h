@@ -2,7 +2,11 @@
 #include <stdlib.h>
 
 #define ORDEM 5
-#define TAMINDICE 30
+
+#define CRIOURAIZ 0
+#define JAEXISTE 1
+#define INSERIUNORMAL 2
+#define INSERIUCOMSPLIT 3
 
 typedef struct {
     int id;
@@ -21,266 +25,255 @@ typedef struct Pagina{
     int folha;
 } PAGINA;
 
-//Função que exporta da memória para o disco
-//recebe a pagina a ser inserida, a posicao em que devemos inseri-la e o arquivo
-int inserirEmDisco(PAGINA atual, int RRN){
+void inserirEmDisco(PAGINA atual){
     FILE *arqInd;
-    arqInd = fopen("arvore.idx", "rb+");
+    arqInd = fopen("testinho.dad", "ab");
 
+    fwrite(&atual, sizeof(PAGINA), 1, arqInd);
+
+    fclose(arqInd);
+}
+
+//*offset é o valor de retorno do offset
+//*RRNinserir é o RRN em que se deve inserir o id atual
+/*int buscar(int id, int RRN, int *offset, int *RRNinserir){
+    //Abertura do arquivo de índice em modo leitura binário.
+    //É feito assim para evitar bugs.
+    FILE *arq = fopen("arvore.idx", "rb");
+
+    //Contador para verificação posterior do id.
+    int i;
+    //Declaração da página em memória que receberá da leitura em disco.
+    PAGINA recebido;
+
+    //Vamos até a posição do RRN da recursão, pulando o primeiro int destinado
+    //a informar se o arquivo de índices está atualizado ou não.
+    fseek(arq, sizeof(PAGINA)*RRN+sizeof(int), SEEK_SET);
+    //Lemos a página em disco.
+    fread(&recebido, sizeof(PAGINA), 1, arq);
+    //Fechamos o arquivo para evitar bugs posteriores.
+    fclose(arq);
+
+    //Iteração para verificar se o id está na página obtida. Se não estiver,
+    //a variável i será a posição em que o id "deveria" estar.
+    for(i = 0; i < recebido.numeroChaves && id >= recebido.chaves[i][0]; i++){
+        //Se o id estiver na página,
+        if(recebido.chaves[i][0] == id){
+            //Deixa na variável offset o offset do id no arquivo de dados
+            *offset = recebido.chaves[i][1];
+            //Retorna o RRN no arquivo de dados do id
+            return RRN;
+        }
+    }
+
+    //Está na página folha e não encontrou o id
+    if(recebido.folha == 1){
+        *RRNinserir = RRN;
+        return -1;
+    }
+
+    //Não está na folha e ainda não encontrou o id
+    else
+        //Recursão para ir ao filho da página onde id deveria estar.
+        return buscar(id, recebido.filhos[i], offset, RRNinserir, caminhoPercorrido, auxIndices);
+}*/
+
+void ordenaPagina(PAGINA *pag, int idInsert, int offSetInsert){
+    int i, j, aux;
+    pag->chaves[pag->numeroChaves][0] = idInsert;
+    pag->chaves[pag->numeroChaves][1] = offSetInsert;
+    pag->numeroChaves++;
+
+    for(i = 0; i < pag->numeroChaves; i++){
+        for(j = 1; j < pag->numeroChaves; j++){
+            if(pag->chaves[j][0] < pag->chaves[j-1][0]){
+                aux = pag->chaves[j][0];
+                pag->chaves[j][0] = pag->chaves[j-1][0];
+                pag->chaves[j-1][0] = aux;
+
+                aux = pag->chaves[j][1];
+                pag->chaves[j][1] = pag->chaves[j-1][1];
+                pag->chaves[j-1][1] = aux;
+            }
+        }
+    }
+}
+
+void inserir(int id, int offSet, int RRNatual){
+    int i, j;
+    int chaveAux[2];
+    PAGINA pagAtual;
+
+    FILE *arqInd;
+    arqInd = fopen("arvore.idx", "r+b");
+
+    fseek(arqInd, sizeof(int)+RRNatual*sizeof(PAGINA), SEEK_SET);
+    fwrite(&pagAtual, sizeof(PAGINA), 1, arqInd);
+
+    if(pagAtual.folha == 0){
+        fclose(arqInd);
+
+        //Busca pela posição de inserção da chave na página atual
+        //Por não ser folha, a inserção não ocorrerá nesta página
+        for(i = 0; i < recebido.numeroChaves && id >= recebido.chaves[i][0]; i++){
+            //Se o id estiver na página,
+            if(recebido.chaves[i][0] == id){
+                //Deixa na variável offset o offset do id no arquivo de dados
+                *offset = recebido.chaves[i][1];
+                //Retorna pois a chave já existe
+                return;
+            }
+            //senão, continua...
+        }
+        //recusão para o filho correspondente à chave a ser inserida
+        return inserir(id, offSet, pagAtual.filhos[i]);
+    }
+    else
+    {
+        if (pagAtual.numeroChaves >= (ORDEM-1))
+        {
+            //Nó está cheio, é necessário realizar um split
+            split(&pagAtual, id, offSet, RRNraiz, RRNatual, arqInd);//Lembrar de fazer cabeçalho com a raiz no arquivo
+        }
+        else
+        {
+            for (i = 0; i < pagAtual.numeroChaves && id>pagAtual.chaves[i][0]; i++)
+            {
+                //...
+            }
+
+            int posColocar = i;
+
+            for (i = (pagAtual.numeroChaves -1) ; i > posColocar; i--)
+            {
+                pagAtual.chaves[i][0] = pagAtual.chaves[i-1][0];
+                pagAtual.chaves[i][1] = pagAtual.chaves[i-1][1];
+            }
+
+            pagAtual.chaves[posColocar][0] = id;
+            pagAtual.chaves[posColocar][1] = offSet;
+
+            /*
+
+            //inserção da nova chave no fim da página(nó)
+            pagAtual.chaves[pagAtual.numeroChaves][0] = id;
+            pagAtual.chaves[pagAtual.numeroChaves][1] = offSet;
+
+            pagAtual.numeroChaves++;
+
+            //ordenação da página(nó)
+            //BubbleSort
+            for (i = 0; i < pagAtual.numeroChaves; i++)
+            {
+                for (j = 0; j < pagAtual.numeroChaves-1; j++)
+                {
+                    if (pagAtual.chaves[j][0] > pagAtual.chaves[j+1][0])
+                    {
+                         chaveAux[0] = pagAtual.chaves[j][0];
+                         chaveAux[1] = pagAtual.chaves[j][1];
+                         pagAtual.chaves[j][0] = pagAtual.chaves[j+1][0];
+                         pagAtual.chaves[j][1] = pagAtual.chaves[j+1][1];
+                         pagAtual.chaves[j+1][0] = chaveAux[0];
+                         pagAtual.chaves[j+1][1] = chaveAux[1];
+                    }
+                }
+            }*/
+        }
+        return;
+    }
+}
+
+void ordenaChaves(int *chaves, int *filhos) //modificar função para que manipule também o vetor de filhos
+{
+    int chaveAux[2];
+    for(i = 0; i < ORDEM+1; i++){
+        for(j = 1; j < ORDEM+1; j++){
+            if(chaves[j][0] < chaves[j-1][0]){
+                chaveAux = chaves[j];
+                chaves[j] = chaves[j-1];
+                chaves[j-1] = chaveAux;
+            }
+        }
+    }
+}
+
+int getNovoRRN(){
+    FILE *arq = fopen("arvore.idx", "rb");
+    fseek(arq, 0, SEEK_END);
+    long tam = ftell(arq);
+    fclose(arq);
+
+    return (tam-sizeof(int))/sizeof(PAGINA);
+}
+
+//Aqui tem que ir atualizando as páginas no arquivo de índice a cada iteração da recursão?
+void split(PAGINA *pag, int idInserir, int offSetInserir, int *RRNraiz, int RRNpagAtual, FILE *arqInd) //falta pegarmos o RRN da raiz
+{
+    PAGINA pagSplit;
+    int chaves[ORDEM][2];
+    int filhos[ORDEM];
     int i, j;
 
-    char pipe[1] = "|";
-    char barra[1] = "/";
-
-    fseek(arqInd, RRN, SEEK_SET);
-    fwrite(&atual.numeroChaves, 1, 1, arqInd);
-    fwrite(&pipe, 1, 1, arqInd);
-    for(i=0; i<(ORDEM-1); i++){
-        j = i;
-        fwrite(&atual.chaves[j][0], 1, 1, arqInd);
-        fwrite(&barra, 1, 1, arqInd);
-        fwrite(&atual.chaves[j][1], 1, 1, arqInd);
-        if(j != ORDEM-2){
-            fwrite(&barra, 1, 1, arqInd);
-        }
-        else{
-            fwrite(&pipe, 1, 1, arqInd);
-        }
+    //se é raiz
+    if (RRNpagAtual == (*RRNraiz))
+    {
+        PAGINA novaRaiz;
+        //Fazer essa parte...
     }
-    for(i=0;i<=ORDEM-1;i++){
-        j = i;
-        fwrite(&atual.filhos[j], 1, 1, arqInd);
-        if(j!=ORDEM-1){
-            fwrite(&barra, 1, 1, arqInd);
+    else
+    {
+        //atribuição das informações das chaves da página atual ao vetor auxiliar de chaves
+        for (i = 0; i < pag->numeroChaves; i++)
+        {
+            chaves[i][0] = pag->chaves[i][0];
+            chaves[i][1] = pag->chaves[i][1];
+            filhos[i] = pag->filhos[i];
         }
-        else{
-            fwrite(&pipe, 1, 1, arqInd);
-        }
-    }
-    fwrite(&atual.folha, 1, 1, arqInd);
-    fwrite(&pipe, 1, 1, arqInd);
-    fclose(arqInd);
-    return RRN;
-}
+        //Fazendo o mesmo para o último filho, que o for acima não trata
+        filhos[i] = pag->filhos[i];
 
-int buscar(int id_no){
+        //Inserção da chave atual na página
+        chaves[i][0] = idInserir;
+        chaves[i][1] = offSetInserir;
 
-}
+        //Revisei até aqui...
+        ordenaChaves(chaves, filhos); //modificar função para que manipule também o vetor de filhos
 
-void split(int id, int offSet, int RRN, PAGINA *atual, int *idPromovido, int *offSetPromovido, int *RRNP, PAGINA *novaPagina, FILE *arqInd){
-    //criando um esquema de suposta pagina temporaria com um espaço a mais
-    int dados[5][2];
-    int filhos[6];
-    int i, j, pos;
-    //calculando a posição do dado novo na pagina temporaria
-    i = 0;
-    while(id > atual->chaves[i][0]){
-        i++;
-    }
-    pos = i;
-    //colocando os dados na suposta pagina temporaria
-    for(j=0;j<i;j++){
-        dados[j][0] = atual->chaves[j][0];
-        dados[j][1] = atual->chaves[j][1];
-    }
-    //da um shift a partir do ponto i
-    for(j=ORDEM-2;j>i;j--){
-        dados[j][0] = atual->chaves[j-1][0];
-        dados[j][1] = atual->chaves[j-1][1];
-    }
-    dados[pos][0] = id;
-    dados[pos][1] = offSet;
-
-
-    //testando se esta mesmo
-    for(i=0;i<5;i++){
-        printf("id: %d\n", dados[i][0]);
-        printf("offset: %d\n", dados[i][1]);
-    }
-
-    //colocando os filhos tambem
-    for(j=0;j<pos+1;j++){
-        filhos[j] = atual->filhos[j];
-    }
-    //da um shift a partir do ponto i
-    for(j=ORDEM-1;j>pos+1;j--){
-        filhos[j] = atual->filhos[j-1];
-    }
-    //filhos[pos+1] = RRN;//RRN /////////////@@@@@@@@@@@@@@@
-    filhos[pos+1] = *RRNP;
-    //Daqui pra frente a pagina temporaria esta no formato desejado
-
-    //testando se esta mesmo
-    printf("\n\nSegunda verificacao:\n");
-    for(i=0;i<5;i++){
-        printf("id: %d\n", dados[i][0]);
-        printf("offset: %d\n", dados[i][1]);
-    }
-
-    //vamos agora colocar os valores nas duas novas paginas de acordo com a regra
-    *idPromovido = dados[2][0];  //2 é o valor do meio
-    *offSetPromovido = dados[2][1];   //2 é o valor do meio
-    fseek(arqInd, 0, SEEK_END);
-    *RRNP = ftell(arqInd);
-
-    novaPagina->chaves[0][0] = dados[3][0];
-    novaPagina->chaves[0][1] = dados[3][1];
-    novaPagina->chaves[1][0] = dados[4][0];
-    novaPagina->chaves[1][1] = dados[4][1];
-    novaPagina->chaves[2][0] = 255;
-    novaPagina->chaves[2][1] = 255;
-    novaPagina->chaves[3][0] = 255;
-    novaPagina->chaves[3][1] = 255;
-
-    atual->chaves[0][0] = dados[0][0];
-    atual->chaves[0][1] = dados[0][1];
-    atual->chaves[1][0] = dados[1][0];
-    atual->chaves[1][1] = dados[1][1];
-    atual->chaves[2][0] = 255;
-    atual->chaves[2][1] = 255;
-    atual->chaves[3][0] = 255;
-    atual->chaves[3][1] = 255;
-
-    atual->filhos[0] = filhos[0];
-    atual->filhos[1] = filhos[1];
-    atual->filhos[2] = filhos[2];
-    atual->filhos[3] = 255;
-    atual->filhos[4] = 255;
-
-    novaPagina->filhos[0] = filhos[3];
-    novaPagina->filhos[1] = filhos[4];
-    novaPagina->filhos[2] = filhos[5];
-    novaPagina->filhos[3] = 255;
-    novaPagina->filhos[4] = 255;
-
-    atual->numeroChaves = 2;
-    novaPagina->numeroChaves = 2;
-}
-
-int inserir(int RRN, int id, int offSet, int *RRNP, int *idP, int *offSetP){
-    int i, j, valorRetorno;
-    FILE *arqInd;
-    arqInd = fopen("arvore.idx", "rb");
-    if(RRN == 255){
-        *idP = id;
-        *offSetP = offSet;
-        *RRNP = -1;
-        return 1;
-    }
-    else{
-        //arrumar a leitura dessa carralha
-        //lendo pagina no RRN corrente
-        PAGINA atual;
-        int temporario, testa;
-        fseek(arqInd, RRN, SEEK_SET);
-        fread(&temporario, 1, 1, arqInd);
-        atual.numeroChaves = temporario;
-        fseek(arqInd, 1, SEEK_CUR);
-        for(i=0;i<4;i++){
-            fread(&temporario, 1, 1, arqInd);
-            atual.chaves[i][0] = temporario;
-            fseek(arqInd, 1, SEEK_CUR);
-            fread(&temporario, 1, 1, arqInd);
-            atual.chaves[i][1] = temporario;
-            fseek(arqInd, 1, SEEK_CUR);
-        }
-        for(i=0;i<5;i++){
-            fread(&temporario, 1, 1, arqInd);
-            atual.filhos[i] = temporario;
-            fseek(arqInd, 1, SEEK_CUR);
-        }
-        fread(&atual.folha, 1, 1, arqInd);
-        //a partir daqui já tem a pagina bunitin
-
-        //testando se pegou certo
-        /*
-        printf("numero chaves: %d\n", atual.numeroChaves);
-        for(i=0;i<4;i++){
-            printf("id: %d, offset: %d\n", atual.chaves[i][0], atual.chaves[i][1]);
-        }
-        for(i=0;i<5;i++){
-            printf("filhos: %d\n", atual.filhos[i]);
-        }
-        printf("folha: %d\n", atual.folha);
-        */
-
-        //Acha a posição
-        i = 0;
-        while(id > atual.chaves[i][0] && atual.chaves[i][0] != -1 && i < 4){
-            i++;
-        }
-        if(atual.chaves[i][0] == id){
-            printf("JÁ TEM ESSE ID !!!");
-        }
-        else{
-            valorRetorno = inserir(atual.filhos[i], id, offSet, RRNP, idP, offSetP); /// os parametros 3 e 4
-            if(valorRetorno == 0){
-                return 0;
-            }
-            else{
-                if(atual.numeroChaves < 4){
-                    i = 0;
-                    while(*idP > atual.chaves[i][0] && atual.chaves[i][0] != -1 && i < 4){
-                        i++;
-                    }
-                    atual.numeroChaves++;
-                    //da um shift a partir do ponto i
-                    for(j=ORDEM-1;j>i;j--){
-                        atual.chaves[j][0] = atual.chaves[j-1][0];
-                        atual.chaves[j][1] = atual.chaves[j-1][1];
-                    }
-                    atual.chaves[i][0] = *idP;
-                    atual.chaves[i][1] = *offSetP;
-                    for(j=0;j<ORDEM;j++){
-                        atual.filhos[j] = -1;
-                    }
-                    printf("Vai inserir no RRN %d seguinte dado:\n", RRN);
-                    printf("numero chaves: %d\n", atual.numeroChaves);
-                    for(i=0;i<4;i++){
-                        printf("id: %d, offset: %d\n", atual.chaves[i][0], atual.chaves[i][1]);
-                    }
-                    for(i=0;i<5;i++){
-                        printf("filhos: %d\n", atual.filhos[i]);
-                    }
-                    printf("folha: %d\n", atual.folha);
-                    system("PAUSE");
-                    inserirEmDisco(atual, RRN);
-                    return 0;
-                }
-                else{
-                    //parte do split, pika grossa e grande !!
-                    PAGINA paginaNova;
-                    printf("Vai entrar no split\n");
-                    split(*idP, *offSetP, RRN, &atual, idP, offSetP, RRNP, &paginaNova, arqInd);
-                    printf("Voltou do split\n");
-
-                    printf("Vai inserir no RRN %d seguinte dado:\n", RRN);
-                    printf("numero chaves: %d\n", atual.numeroChaves);
-                    for(i=0;i<4;i++){
-                        printf("id: %d, offset: %d\n", atual.chaves[i][0], atual.chaves[i][1]);
-                    }
-                    for(i=0;i<5;i++){
-                        printf("filhos: %d\n", atual.filhos[i]);
-                    }
-                    printf("folha: %d\n", atual.folha);
-                    system("PAUSE");
-                    inserirEmDisco(atual, RRN);
-
-                    printf("Vai inserir no RRN %d seguinte dado:\n", RRN);
-                    printf("numero chaves: %d\n", paginaNova.numeroChaves);
-                    for(i=0;i<4;i++){
-                        printf("id: %d, offset: %d\n", paginaNova.chaves[i][0], paginaNova.chaves[i][1]);
-                    }
-                    for(i=0;i<5;i++){
-                        printf("filhos: %d\n", paginaNova.filhos[i]);
-                    }
-                    printf("folha: %d\n", paginaNova.folha);
-                    system("PAUSE");
-                    inserirEmDisco(paginaNova, *RRNP);
-                    return 1;
-                }
+        //i vai até (ORDEM-1)/2 = 2 por ser o tamanho minimo de chaves numa pagina
+        for(i = 0; i < (ORDEM-1)/2; i++){
+            for(j = 0; j < 2; j++){
+                pag->chaves[i][j] = chaves[i][j];
             }
         }
-    }
-}
+        pag->numeroChaves = 2;
 
+        //para as demais chaves do nó, atribuímos nulo(-1) tanto para a chave, quanto para seu offset
+        for(i = (ORDEM-1)/2; i < ORDEM-1; i++){
+            for(j = 0; j < 2; j++){
+                pag->chaves[i][j] = -1;
+            }
+        }
+
+        //colocamos na pagina auxiliar pagSplit a outra metade da pagina
+        //k é o parâmetro utilizado para pegar a outra metade dos filhos da página
+        //Para ORDEM = 5, k = 3.
+        int k = (ORDEM-1)/2 + 1;
+        for(i = 0; i < (ORDEM-1)/2; i++){
+            for(j = 0; j < 2; j++){
+                pagSplit.chaves[i][j] = chaves[i+k][j];//só fazemos isso pra deixar o elemento central do vetor de chaves intacto, para ser usado na promoção
+            }
+        }
+        pagSplit.numeroChaves = 2;
+
+        //para as demais chaves do nó, atribuímos nulo(-1)
+        for(i = (ORDEM-1)/2; i < ORDEM-1; i++){
+            for(j = 0; j < 2; j++){
+                pagSplit.chaves[i][j] = -1;
+            }
+        }
+
+        //chave 2, intermediária, sobe para o antecessor ao nó atual
+    }
+
+    return;
+}
