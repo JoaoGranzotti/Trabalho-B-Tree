@@ -4,12 +4,12 @@
 #include <string.h>
 
 //###############################
-//#   FUNÇÕES PARA ADIMINISTRAR #
+//#   FUNÃ‡Ã•ES PARA ADIMINISTRAR #
 //#   O ARQUIVO DE LOG DE ACOR- #
 //#   DO COM O PDF.             #
 //###############################
 
-//Abre o arquivo de log, ou o cria se ele não existir
+//Abre o arquivo de log, ou o cria se ele nÃ£o existir
 void criarArquivoDeLog(char nomeArquivoLog[]){
     FILE *arquivo;
     arquivo = fopen (nomeArquivoLog, "w");
@@ -22,7 +22,7 @@ void criarArquivoDeLog(char nomeArquivoLog[]){
     fclose (arquivo);
 }
 
-// coloca as ações no arquivo de log
+// coloca as aÃ§Ãµes no arquivo de log
 void atualizaArquivoDeLog(char nomeArquivoLog[], char linhaAdicionada[]){
     FILE *arquivo;
     arquivo = fopen (nomeArquivoLog, "a");
@@ -36,16 +36,32 @@ void atualizaArquivoDeLog(char nomeArquivoLog[], char linhaAdicionada[]){
 }
 
 //###############################
-//#   FUNÇÕES PARA MANIPULAR O  #
+//#   FUNÃ‡Ã•ES PARA MANIPULAR O  #
 //#   ARQUIVO DE DADOS DE ACOR- #
 //#   DO COM O PDF.             #
 //###############################
 
-// vai pegar as informações do arquivo de dados para criar a partir dele o arquivo de indices
+int camp_var_reg_var(tRegistro e, char *buffer) {
+     sprintf(buffer, "|%d|%s|%s|", e.id, e.titulo, e.genero);
+     return strlen(buffer);
+}
+
+char *parser(char *buffer, int *pos) {
+    int posi = *pos;
+
+    while(buffer[*pos] != '|')
+        (*pos)++;
+
+    buffer[*pos] = '\0';
+    (*pos)++;
+    return &buffer[posi];
+}
+
+// vai pegar as informaÃ§Ãµes do arquivo de dados para criar a partir dele o arquivo de indices
 void criarArquivoDeIndice(){
     FILE *arqdados, *arqind;
     arqdados = fopen ("dados.dad", "rb");
-    arqind = fopen ("arvore.idx", "rb+");
+    arqind = fopen ("arvore.idx", "wb");
 
     if (arqdados == NULL) {
        printf ("Houve um erro ao abrir o arquivo de dados.\n");
@@ -55,51 +71,63 @@ void criarArquivoDeIndice(){
         printf ("Houve um erro ao abrir o arquivo de indices.\n");
         return;
     }
-    char dadoLido[3];
     int splitouRiaz = 0;
     int i;
-    int id;
-    int tamanho = 0;
-    int offSet = 0;
-    int raiz;
+    int tamanho;
+    int atualizado = 1;
+    int RRNraiz;
     int *RRNP;
     int *idPromo;
     int *idP;
     int *offSetP;
-    printf("Enderecos rrnp, idp, offsetp: %d, %d, %d", RRNP, idP, offSetP);
-    //verifica se o arqInd esta vazio
-    fseek(arqind, 0, SEEK_END);
-    int temCoisa = ftell(arqind);
-    //if(temCoisa == 0){
-        //pegando o primeiro dado do arquivo de dados
-        fseek(arqdados, 0, SEEK_SET);
-        fread(dadoLido, 3, 1, arqdados);
-        fseek(arqdados, -2, SEEK_CUR);
-        id = dadoLido[2];
-        offSet = 1;
-        tamanho = dadoLido[0];
+    //printf("Enderecos rrnp, idp, offsetp: %d, %d, %d", RRNP, idP, offSetP);
 
-        PAGINA atual;
-        atual.numeroChaves = 1;
-        atual.chaves[0][0] = id;
-        atual.chaves[0][1] = offSet;
-        for(i=1;i<4;i++){
-            atual.chaves[i][0] = -1;
-            atual.chaves[i][1] = -1;
+    int RRN = 0;
+    int offSet = 0;
+    int id;
+    int retorno; //valor auxiliar de retorno da funÃ§Ã£o de inserÃ§Ã£o. ServirÃ¡ para
+                 //escrever no arquivo de log.
+    char size;
+    char buffer[1000];
+    int pos;
+    PAGINA atual;
+    tRegistro reg;
+    fwrite(&atualizado, sizeof(int), 1, arqind);
+    while (fread(&size, sizeof(size), 1, arqdados)) {
+        fread(buffer, size, 1, arqdados);
+        pos = 1;
+        sscanf(parser(buffer, &pos), "%d", &reg.id);
+        strcpy(reg.titulo, parser(buffer, &pos));
+        strcpy(reg.genero, parser(buffer, &pos));
+        
+        fseek(arqInd, 0, SEEK_END);
+        long tamanhoArquivo = ftell(arqInd);
+
+        if(tamanhoArquivo == sizeof(int)){
+            PAGINA pagNova;
+            pagNova.numeroChaves = 1;
+            pagNova.chaves[0][0] = reg.id;
+            pagNova.chaves[0][1] = offSet;
+            pagNova.folha = 1;
+            for(i = 0; i < ORDEM; i++){
+                pagNova.filhos[i] = -1;
+            }
+
+            RRNraiz = 0;
+
+            fwrite(&pagNova, sizeof(pagNova), 1, arqInd);
         }
-        for(i=0;i<5;i++){
-            atual.filhos[i] = -1;
+        else{
+            retorno = inserir()
         }
-        atual.folha = 1;
-        int a = 3;
-        int b = 1;
-        char pipe[1] = "|";
-        fseek(arqind, 0, SEEK_SET);
-        fwrite(&a, 1, 1, arqind);
-        fwrite(&pipe, 1, 1, arqind);
-        fwrite(&b, 1, 1, arqind);
-        inserirEmDisco(atual, 3);
-    //}
+
+
+        
+        offSet = sizeof(size)+size+3;
+    }
+
+    /*inserirEmDisco(atual, RRN);
+
     offSet = offSet + tamanho;
     fseek(arqdados, offSet, SEEK_SET);
     while(fread(dadoLido, 3, 1, arqdados) != 0){
@@ -147,7 +175,7 @@ void criarArquivoDeIndice(){
         offSet = offSet + tamanho + 1;
         fseek(arqdados, offSet, SEEK_SET);
         printf("depois da funcao inseir\n");
-    }
+    }*/
 
     char mensagem[] = "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.";
     atualizaArquivoDeLog("log_X.txt", mensagem);
@@ -157,13 +185,22 @@ void criarArquivoDeIndice(){
 
 //Insere as musicas no arquivo de dados.dad
 void inserirMusica(tRegistro novoRegistro){
+    char size;
+    int i, pos;
+    char buffer[1000];
+
     FILE *arquivo;
     arquivo = fopen ("dados.dad", "ab");
     if (arquivo == NULL) {
        printf ("Houve um erro ao abrir o arquivo.\n");
        return;
     }
-    //removendo os \n
+    
+    size = camp_var_reg_var(novoRegistro, buffer);
+    fwrite(&size, sizeof(size), 1, arquivo);
+    fwrite(buffer, size, 1, arquivo);
+
+    /*//removendo os \n
     novoRegistro.titulo[strcspn(novoRegistro.titulo, "\n")] = 0;
     novoRegistro.genero[strcspn(novoRegistro.genero, "\n")] = 0;
 
@@ -182,7 +219,7 @@ void inserirMusica(tRegistro novoRegistro){
     fwrite(&tamanhoTotal, 1, 1, arquivo);
     fwrite(&pipe, sizeof(pipe), 1, arquivo);
     fwrite(&novoRegistro.id, 1, 1, arquivo);
-    fwrite(&stringConcatenada, tamanho, 1, arquivo);
+    fwrite(&stringConcatenada, tamanho, 1, arquivo);*/
     printf ("Arquivo de 'dados' atualizado com sucesso.\n");
     fclose (arquivo);
 
