@@ -99,7 +99,7 @@ void criarArquivoDeIndice(){
         sscanf(parser(buffer, &pos), "%d", &reg.id);
         strcpy(reg.titulo, parser(buffer, &pos));
         strcpy(reg.genero, parser(buffer, &pos));
-        
+
         fseek(arqInd, 0, SEEK_END);
         long tamanhoArquivo = ftell(arqInd);
 
@@ -118,11 +118,14 @@ void criarArquivoDeIndice(){
             fwrite(&pagNova, sizeof(pagNova), 1, arqInd);
         }
         else{
-            retorno = inserir()
+            int flag = 1;
+            int passouPorSplit = 0;
+            int RRNnovaPagSplit = -1;//pois o split inicial ocorrerá na folha
+            inserir(id, offset, RRNatual, &flag, &passouPorSplit, &RRNnovaPagSplit);//lembrar de revisar
         }
 
 
-        
+
         offSet = sizeof(size)+size+3;
     }
 
@@ -195,7 +198,7 @@ void inserirMusica(tRegistro novoRegistro){
        printf ("Houve um erro ao abrir o arquivo.\n");
        return;
     }
-    
+
     size = camp_var_reg_var(novoRegistro, buffer);
     fwrite(&size, sizeof(size), 1, arquivo);
     fwrite(buffer, size, 1, arquivo);
