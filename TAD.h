@@ -71,28 +71,23 @@ void criarArquivoDeIndice(){
         printf ("Houve um erro ao abrir o arquivo de indices.\n");
         return;
     }
-    int splitouRiaz = 0;
+
     int i;
-    int tamanho;
     int atualizado = 1;
     int RRNraiz;
-    int *RRNP;
-    int *idPromo;
-    int *idP;
-    int *offSetP;
-    //printf("Enderecos rrnp, idp, offsetp: %d, %d, %d", RRNP, idP, offSetP);
-
-    int RRN = 0;
     int offSet = 0;
-    int id;
+    int pos;
     int retorno; //valor auxiliar de retorno da função de inserção. Servirá para
                  //escrever no arquivo de log.
+    long posArq;
+    long tamanhoArquivo;
     char size;
     char buffer[1000];
-    int pos;
-    PAGINA atual;
     tRegistro reg;
+
     fwrite(&atualizado, sizeof(int), 1, arqind);
+    fclose(arqind);
+
     while (fread(&size, sizeof(size), 1, arqdados)) {
         fread(buffer, size, 1, arqdados);
         pos = 1;
@@ -100,8 +95,10 @@ void criarArquivoDeIndice(){
         strcpy(reg.titulo, parser(buffer, &pos));
         strcpy(reg.genero, parser(buffer, &pos));
 
-        fseek(arqInd, 0, SEEK_END);
-        long tamanhoArquivo = ftell(arqInd);
+        arqind = fopen("arvore.idx", "r+b");
+        fseek(arqind, 0, SEEK_END);
+        tamanhoArquivo = ftell(arqind);
+        fclose(arqind);
 
         if(tamanhoArquivo == sizeof(int)){
             PAGINA pagNova;
@@ -114,73 +111,23 @@ void criarArquivoDeIndice(){
             }
 
             RRNraiz = 0;
-
-            fwrite(&pagNova, sizeof(pagNova), 1, arqInd);
+            arqind = fopen("arvore.idx", "ab");
+            fwrite(&RRNraiz, sizeof(RRNraiz), 1, arqind);
+            fwrite(&pagNova, sizeof(pagNova), 1, arqind);
+            fclose(arqind);
         }
         else{
-            int flag = 1;
+            int flag = 1; //variável auxiliar para servir como uma verificação se é necessário inserir a chave
             int passouPorSplit = 0;
             int RRNnovaPagSplit = -1;//pois o split inicial ocorrerá na folha
-            inserir(id, offset, RRNatual, &flag, &passouPorSplit, &RRNnovaPagSplit);//lembrar de revisar
+            inserir(reg.id, offSet, RRNraiz, &RRNraiz, &flag, &passouPorSplit, &RRNnovaPagSplit);
         }
 
-
-
-        offSet = sizeof(size)+size+3;
+        offSet += sizeof(size)+size;
     }
 
-    /*inserirEmDisco(atual, RRN);
 
-    offSet = offSet + tamanho;
-    fseek(arqdados, offSet, SEEK_SET);
-    while(fread(dadoLido, 3, 1, arqdados) != 0){
-        fseek(arqdados, -2, SEEK_CUR);
-        id = dadoLido[2];
-        tamanho = dadoLido[0];
-        //offSet = tamanho+1;
-        //tamanho = dadoLido[0] + tamanho;
-        fseek(arqind, 0, SEEK_SET);
-        fread(dadoLido, 3, 1, arqind);
-        raiz = dadoLido[0];
-        //pegando a raiz
-        fseek(arqind, 1, SEEK_SET);
-
-        //temos o ID OFFSET RAIZ
-        printf("antes da funcao inseir\n");
-        printf("Raiz: %d\nid: %d\noffset: %d\n", raiz, id, offSet);
-        system("PAUSE");
-
-        splitouRiaz = inserir(raiz, id, offSet, RRNP, idPromo, offSetP);
-        if(splitouRiaz == 1){
-            atual.numeroChaves = 1;
-            atual.chaves[0][0] = idP;
-            atual.chaves[0][1] = offSetP;
-            for(i=1;i<4;i++){
-                atual.chaves[i][0] = -1;
-                atual.chaves[i][1] = -1;
-            }
-            for(i=2;i<5;i++){
-                atual.filhos[i] = -1;
-            }
-            atual.filhos[i] = raiz;
-            atual.filhos[i] = RRNP;
-            atual.folha = 0;
-            fseek(arqind, 0, SEEK_END);
-            a = ftell(arqind);
-            b = 1;
-            char pipe[1] = "|";
-            fseek(arqind, 0, SEEK_SET);
-            fwrite(&a, 1, 1, arqind);
-            fwrite(&pipe, 1, 1, arqind);
-            fwrite(&b, 1, 1, arqind);
-            inserirEmDisco(atual, 3);
-        }
-        offSet = offSet + tamanho + 1;
-        fseek(arqdados, offSet, SEEK_SET);
-        printf("depois da funcao inseir\n");
-    }*/
-
-    char mensagem[] = "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.";
+    char mensagem[] = "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.\n";
     atualizaArquivoDeLog("log_X.txt", mensagem);
     fclose (arqdados);
     fclose (arqind);
@@ -203,26 +150,6 @@ void inserirMusica(tRegistro novoRegistro){
     fwrite(&size, sizeof(size), 1, arquivo);
     fwrite(buffer, size, 1, arquivo);
 
-    /*//removendo os \n
-    novoRegistro.titulo[strcspn(novoRegistro.titulo, "\n")] = 0;
-    novoRegistro.genero[strcspn(novoRegistro.genero, "\n")] = 0;
-
-    char stringConcatenada[64] = "|";
-    strcat(stringConcatenada, novoRegistro.titulo);
-    strcat(stringConcatenada, "|");
-    strcat(stringConcatenada, novoRegistro.genero);
-    strcat(stringConcatenada, "|");
-
-    //a partir daqui a string esta no padrao desejado !!!
-    int tamanho = strlen(stringConcatenada);
-    int tamanhoTotal = tamanho + 2;
-    char pipe = '|';
-
-    //salvando no arquivo de dados
-    fwrite(&tamanhoTotal, 1, 1, arquivo);
-    fwrite(&pipe, sizeof(pipe), 1, arquivo);
-    fwrite(&novoRegistro.id, 1, 1, arquivo);
-    fwrite(&stringConcatenada, tamanho, 1, arquivo);*/
     printf ("Arquivo de 'dados' atualizado com sucesso.\n");
     fclose (arquivo);
 
@@ -239,7 +166,7 @@ void pesquisarMusica(int id_in){
 
     //Essa parte escreve o que foi feito no arquivo de log
     char *mensagem = malloc(50*sizeof(char));
-    sprintf(mensagem, "Execucao de operacao de PESQUISA de %d.", novoRegistro.id);
+    sprintf(mensagem, "Execucao de operacao de PESQUISA de %d.\n", novoRegistro.id);
     atualizaArquivoDeLog("log_X.txt", mensagem);
     free(mensagem);
 }

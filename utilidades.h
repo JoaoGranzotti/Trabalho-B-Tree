@@ -7,26 +7,17 @@
 int verificaEntrada(char texto[]){
     int i = 0;
     char elemento = texto[i];
-    while(elemento != '\n'){
-        if((elemento >= 'a' && elemento <= 'z')||(elemento >= 'A' && elemento <= 'Z')){
+    while(elemento != '\n' && elemento != '\0'){
+        if((elemento >= 'a' && elemento <= 'z') || (elemento >= 'A' && elemento <= 'Z') || (elemento >= '0' && elemento <= '9') || (elemento == ' ')){
             i++;
             elemento = texto[i];
-        }else{
-            if(elemento >= '0' && elemento <= '9'){
-                i++;
-                elemento = texto[i];
-            }
-            else{
-                if(elemento == ' '){
-                    i++;
-                    elemento = texto[i];
-                }else{
-                    printf("Entrada inválida. '%c', na posicao '%d'\n", elemento, i);
-                    return 0;
-                }
-            }
+        }
+        else{
+            printf("Entrada inválida. '%c', na posicao '%d'\n", elemento, i);
+            return 0;
         }
     }
+    texto[i] = '\0';
     return 1;
 }
 

@@ -4,15 +4,13 @@
 #include "utilidades.h"
 
 int main(){
-    char nomeArquivoLog[] = "log_X.txt";
-    char nomeArquivoDados[] = "dados.dad";
-    char nomeArquivoIndice[] = "arvore.idx";
     char entrada[100];
 
     int rodando = 1;
     int entradaValida = 0;
     int escolhaMenu;
     int idMusica;
+    char ch;
 
     printf("Trabalho Alg. II - Arvore B\n");
     while(rodando == 1){
@@ -25,33 +23,29 @@ int main(){
         printf("6. Fechar o programa.\n");
         scanf("%d", &escolhaMenu);
         fflush(stdin);
+        system("clear");
         switch(escolhaMenu){
         case 1:
             criarArquivoDeIndice();
             break;
         case 2:
-            system("CLS");
-            printf("Tela inserir nova musica:\n");
+            printf("Inserir nova musica:\n");
             tRegistro novoRegistro;
             while(entradaValida == 0){
                 printf("Digite um numero inteiro com ID da musica:\n");
                 scanf("%d", &novoRegistro.id);
-                fflush(stdin);
-                entradaValida = 1;
+                getchar();
+                entradaValida += 1;
             }
             while(entradaValida == 1){
                 printf("Digite o titulo da musica:\n");
-                fgets(novoRegistro.titulo, 30, stdin);
-                //scanf("%[^\n]s", novoRegistro.titulo);
-                //setbuf(stdin, NULL);
-                entradaValida = entradaValida + verificaEntrada(novoRegistro.titulo);
+                scanf("%s", novoRegistro.titulo);
+                entradaValida += verificaEntrada(novoRegistro.titulo);
             }
             while(entradaValida == 2){
                 printf("Digite o genero da musica:\n");
-                fgets(novoRegistro.genero, 20, stdin);
-                //scanf("%[^\n]s", novoRegistro.genero);
-                //setbuf(stdin, NULL);
-                entradaValida = entradaValida + verificaEntrada(novoRegistro.genero);
+                scanf("%s", novoRegistro.genero);
+                entradaValida += verificaEntrada(novoRegistro.genero);
             }
             //problema aqui
             inserirMusica(novoRegistro);

@@ -27,113 +27,11 @@ typedef struct Pagina{
 
 void inserirEmDisco(PAGINA atual){
     FILE *arqInd;
-    arqInd = fopen("indice.idx", "ab");
+    arqInd = fopen("arvore.idx", "ab");
 
     fwrite(&atual, sizeof(PAGINA), 1, arqInd);
 
     fclose(arqInd);
-}
-
-void ordenaPagina(PAGINA *pag, int idInsert, int offSetInsert){
-    int i, j, aux;
-    pag->chaves[pag->numeroChaves][0] = idInsert;
-    pag->chaves[pag->numeroChaves][1] = offSetInsert;
-    pag->numeroChaves++;
-
-    for(i = 0; i < pag->numeroChaves; i++){
-        for(j = 1; j < pag->numeroChaves; j++){
-            if(pag->chaves[j][0] < pag->chaves[j-1][0]){
-                aux = pag->chaves[j][0];
-                pag->chaves[j][0] = pag->chaves[j-1][0];
-                pag->chaves[j-1][0] = aux;
-
-                aux = pag->chaves[j][1];
-                pag->chaves[j][1] = pag->chaves[j-1][1];
-                pag->chaves[j-1][1] = aux;
-            }
-        }
-    }
-}
-
-void inserir(int id, int offSet, int RRNatual, int *RRNraiz, int *precisaInserir, int *passouPorSplit, int *RRNnovaPagSplit){
-    int i, j;
-    int chaveAux[2];
-    PAGINA pagAtual;
-
-    FILE *arqInd;
-    arqInd = fopen("arvore.idx", "r+b");
-
-    fseek(arqInd, sizeof(int)+RRNatual*sizeof(PAGINA), SEEK_SET);
-    fwrite(&pagAtual, sizeof(PAGINA), 1, arqInd);
-
-    fclose(arqInd);
-
-    //Busca pela posição de inserção da chave na página atual
-    for(i = 0; i < recebido.numeroChaves && id >= recebido.chaves[i][0]; i++){
-        //Se o id estiver na página,
-        if(recebido.chaves[i][0] == id){
-            //Deixa na variável offset o offset do id no arquivo de dados
-            *offset = recebido.chaves[i][1];
-            //Retorna pois a chave já existe
-            return;
-        }
-        //senão, continua...
-    }
-
-    //Senão é folha, prossegue com a busca
-    if(pagAtual.folha == 0){
-        //recusão para o filho correspondente à chave a ser inserida
-        inserir(id, offSet, pagAtual.filhos[i], RRNraiz, precisaInserir);
-    }
-
-    if(precisaInserir)
-    {
-        if (pagAtual.numeroChaves >= (ORDEM-1))
-        {
-            //Nó está cheio, é necessário realizar um split
-            split(&pagAtual, &id, &offSet, RRNraiz, RRNatual, &RRNnovaPagSplit);//Lembrar de fazer cabeçalho com a raiz no arquivo
-            (*passouPorSplit) = 1;
-        }
-        else
-        {
-            for (i = 0; i < pagAtual.numeroChaves && id>pagAtual.chaves[i][0]; i++)
-            {
-                //Não precisa de código aqui dentro...
-            }
-
-            int posColocar = i;
-
-            //Inserção ordenada
-            //Shift dos elementos maiores que o a ser inserido
-            for (i = (pagAtual.numeroChaves -1) ; i > posColocar; i--)
-            {
-                pagAtual.chaves[i][0] = pagAtual.chaves[i-1][0];
-                pagAtual.chaves[i][1] = pagAtual.chaves[i-1][1];
-            }
-
-            //Inserção do novo elemento na posição correta
-            pagAtual.chaves[posColocar][0] = id;
-            pagAtual.chaves[posColocar][1] = offSet;
-
-            //Inserção do filho na posição correta, caso venha de um split
-            if((*passouPorSplit) == 1)
-            {
-                int ctrl;
-                //Realiza o deslocamento dos filhos
-                for(ctrl = pagAtual.numeroChaves; ctrl > (posColocar+1); ctrl--)
-                {
-                    pagAtual.filhos[ctrl] = pagAtual.filhos[ctrl-1];
-                }
-
-                //Neste ponto, ctrl = posColocar
-                pagAtual.filhos[ctrl] = (*RRNnovaPagSplit);
-
-                (*passouPorSplit) = 0;
-            }
-            (*precisaInserir) = 0;
-        }
-    }
-    return;
 }
 
 int getNovoRRN(){
@@ -145,6 +43,18 @@ int getNovoRRN(){
     return (tam-sizeof(int))/sizeof(PAGINA);
 }
 
+void atualizarIndice(PAGINA *pag, int RRNpag)
+{
+    FILE *arqInd;
+    arqInd = fopen("arvore.idx", "r+b");
+
+    fseek(arqInd, 2*sizeof(int)+RRNpag*sizeof(PAGINA), SEEK_SET);
+
+    fwrite(pag, sizeof(PAGINA), 1, arqInd);
+
+    fclose(arqInd);
+}
+
 //Aqui tem que ir atualizando as páginas no arquivo de índice a cada iteração da recursão?
 void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RRNpagAtual, int *RRNnovaPagSplit) //falta pegarmos o RRN da raiz
 {
@@ -152,8 +62,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     int chaves[ORDEM][2];
     int filhos[ORDEM+1];
     int i, j;
-
-
 
     //atribuição das informações das chaves da página atual ao vetor auxiliar de chaves
     for (i = 0; i < pag->numeroChaves; i++)
@@ -166,7 +74,7 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     filhos[i] = pag->filhos[i];
 
     //Verificação do local de inserção da chave no vetor auxiliar de chaves
-    for (i = 0; i < (ORDEM-1) && id>chaves[i][0]; i++)
+    for (i = 0; i < (ORDEM-1) && *idInserir > chaves[i][0]; i++)
     {
         //Não precisa de código aqui dentro...
     }
@@ -183,8 +91,8 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     }
 
     //Inserção do novo elemento na posição correta
-    chaves[posColocar][0] = idInserir;
-    chaves[posColocar][1] = offSetInserir;
+    chaves[posColocar][0] = *idInserir;
+    chaves[posColocar][1] = *offSetInserir;
 
     //Inserção do filho na posição correta
     int ctrl;
@@ -232,9 +140,9 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     }
     pagSplit.numeroChaves = 2;
 
-    pagSplit->filhos[0] = filhos[3];
-    pagSplit->filhos[1] = filhos[4];
-    pagSplit->filhos[2] = filhos[5];
+    pagSplit.filhos[0] = filhos[3];
+    pagSplit.filhos[1] = filhos[4];
+    pagSplit.filhos[2] = filhos[5];
 
     //para as demais chaves do nó, atribuímos nulo(-1)
     for(i = (ORDEM-1)/2; i < ORDEM-1; i++){
@@ -243,8 +151,8 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         }
     }
 
-    pagSplit->filhos[3] = -1;
-    pagSplit->filhos[4] = -1;
+    pagSplit.filhos[3] = -1;
+    pagSplit.filhos[4] = -1;
 
 
     //Pega o novo RRN para que ele "suba" na recursão
@@ -283,14 +191,87 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     return;
 }
 
-void atualizarIndice(PAGINA *pag, int RRNpag)
-{
+
+//Função de inserção da chave "id" com offset "offSet" na Árvore B. RRNatual começa sendo o da raiz.
+void inserir(int id, int offSet, int RRNatual, int *RRNraiz, int *precisaInserir, int *passouPorSplit, int *RRNnovaPagSplit){
+    int i, j;
+    int chaveAux[2];
+    PAGINA pagAtual;
+
     FILE *arqInd;
-    arqInd = fopen("indice.idx", "ab");
+    arqInd = fopen("arvore.idx", "r+b");
 
-    fseek(arqInd, sizeof(int)+RRNpag*sizeof(PAGINA), SEEK_SET);
-
-    fwrite(pag, sizeof(PAGINA), 1, arqInd);
+    fseek(arqInd, 2*sizeof(int)+RRNatual*sizeof(PAGINA), SEEK_SET);
+    fread(&pagAtual, sizeof(PAGINA), 1, arqInd);
 
     fclose(arqInd);
+
+    //Busca pela posição de inserção da chave na página atual
+    for(i = 0; i < pagAtual.numeroChaves && id >= pagAtual.chaves[i][0]; i++){
+        //Se o id estiver na página,
+        if(pagAtual.chaves[i][0] == id){
+            //Retorna pois a chave já existe
+            return;
+        }
+        //senão, continua...
+    }
+
+    //Se não é folha, prossegue com a busca
+    if(pagAtual.folha == 0){
+        //recursão para o filho correspondente à chave a ser inserida
+        inserir(id, offSet, pagAtual.filhos[i], RRNraiz, precisaInserir, passouPorSplit, RRNnovaPagSplit);
+    }
+
+    if(*precisaInserir)
+    {
+        if (pagAtual.numeroChaves >= (ORDEM-1))
+        {
+            //Nó está cheio, é necessário realizar um split
+            split(&pagAtual, &id, &offSet, RRNraiz, RRNatual, RRNnovaPagSplit);//Lembrar de fazer cabeçalho com a raiz no arquivo
+            (*passouPorSplit) = 1;
+        }
+        else
+        {
+            for (i = 0; i < pagAtual.numeroChaves && id > pagAtual.chaves[i][0]; i++)
+            {
+                //Não precisa de código aqui dentro...
+            }
+
+            int posColocar = i;
+
+            //Inserção ordenada
+            //Shift dos elementos maiores que o a ser inserido
+            for (i = pagAtual.numeroChaves; i > posColocar; i--)
+            {
+                pagAtual.chaves[i][0] = pagAtual.chaves[i-1][0];
+                pagAtual.chaves[i][1] = pagAtual.chaves[i-1][1];
+            }
+
+            //Inserção do novo elemento na posição correta
+            pagAtual.chaves[posColocar][0] = id;
+            pagAtual.chaves[posColocar][1] = offSet;
+            pagAtual.numeroChaves++;
+
+            //Inserção do filho na posição correta, caso venha de um split
+            if((*passouPorSplit) == 1)
+            {
+                int ctrl;
+                //Realiza o deslocamento dos filhos
+                for(ctrl = pagAtual.numeroChaves; ctrl > (posColocar+1); ctrl--)
+                {
+                    pagAtual.filhos[ctrl] = pagAtual.filhos[ctrl-1];
+                }
+
+                //Neste ponto, ctrl = posColocar
+                pagAtual.filhos[ctrl] = (*RRNnovaPagSplit);
+
+                (*passouPorSplit) = 0;
+            }
+            (*precisaInserir) = 0;
+        }
+    }
+
+    atualizarIndice(&pagAtual, RRNatual);
+
+    return;
 }
