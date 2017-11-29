@@ -23,7 +23,7 @@ int main(){
         printf("6. Fechar o programa.\n");
         scanf("%d", &escolhaMenu);
         fflush(stdin);
-        system("clear");
+        //system("clear");
         switch(escolhaMenu){
         case 1:
             criarArquivoDeIndice();

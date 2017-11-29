@@ -31,8 +31,13 @@ void lePaginas(){
 
     int i = 0;
     int j, k;
+    int att, RRNraiz;
 
-    fseek(arq, 2*sizeof(int), SEEK_SET);
+    fread(&att, sizeof(att), 1, arq);
+    fread(&RRNraiz, sizeof(RRNraiz), 1, arq);
+    printf("Atualizado: %d\n", att);
+    printf("RRN raiz = %d\n", RRNraiz);
+
     while(fread(&leitura, sizeof(leitura), 1,  arq)){
         printf("Pagina numero %d:\n", i);
         printf("Numero de Chaves: %d\n", leitura.numeroChaves);

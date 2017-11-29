@@ -28,6 +28,10 @@ typedef struct Pagina{
 void inserirEmDisco(PAGINA atual){
     FILE *arqInd;
     arqInd = fopen("arvore.idx", "ab");
+    if(arqInd == NULL){
+        printf("Nao foi possivel abrir o arquivo arvore.idx para escrever uma nova pagina. Erro 0x0001.\n");
+        return;
+    }
 
     fwrite(&atual, sizeof(PAGINA), 1, arqInd);
 
@@ -35,7 +39,13 @@ void inserirEmDisco(PAGINA atual){
 }
 
 int getNovoRRN(){
-    FILE *arq = fopen("arvore.idx", "rb");
+    FILE *arq;
+    arq = fopen("arvore.idx", "rb");
+    if(arq == NULL){
+        printf("Nao foi possivel abrir o arquivo arvore.idx para obter novo RRN. Erro 0x0002.\n");
+        return -1;
+    }
+
     fseek(arq, 0, SEEK_END);
     long tam = ftell(arq);
     fclose(arq);
@@ -47,10 +57,27 @@ void atualizarIndice(PAGINA *pag, int RRNpag)
 {
     FILE *arqInd;
     arqInd = fopen("arvore.idx", "r+b");
+    if(arqInd == NULL){
+        printf("Nao foi possivel abrir o arquivo arvore.idx para atualizar indice. Erro 0x0003.\n");
+        return;
+    }
 
     fseek(arqInd, 2*sizeof(int)+RRNpag*sizeof(PAGINA), SEEK_SET);
-
     fwrite(pag, sizeof(PAGINA), 1, arqInd);
+
+    fclose(arqInd);
+}
+
+void atualizarRaiz(int RRNraiz){
+    FILE *arqInd;
+    arqInd = fopen("arvore.idx", "r+b");
+    if(arqInd == NULL){
+        printf("Nao foi possivel abrir o arquivo arvore.idx para atualizar raiz. Erro 0x0004.\n");
+        return;
+    }
+
+    fseek(arqInd, sizeof(int), SEEK_SET);
+    fwrite(&RRNraiz, sizeof(RRNraiz), 1, arqInd);
 
     fclose(arqInd);
 }
@@ -62,6 +89,7 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     int chaves[ORDEM][2];
     int filhos[ORDEM+1];
     int i, j;
+    int flag;
 
     //atribuição das informações das chaves da página atual ao vetor auxiliar de chaves
     for (i = 0; i < pag->numeroChaves; i++)
@@ -115,9 +143,15 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     pag->numeroChaves = 2;
 
     //Filhos da página original(da esquerda)
+    for(i = 0; i < (ORDEM-1)/2 + 1; i++){
+        pag->filhos[i] = filhos[i];
+    }
+    
+    /*
     pag->filhos[0] = filhos[0];
     pag->filhos[1] = filhos[1];
     pag->filhos[2] = filhos[2];
+    */
 
     //para as demais chaves do nó, atribuímos nulo(-1) tanto para a chave, quanto para seu offset
     for(i = (ORDEM-1)/2; i < ORDEM-1; i++){
@@ -126,8 +160,14 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         }
     }
 
+    for(i = (ORDEM-1)/2 + 1; i < ORDEM-1; i++){
+        pag->filhos[i] = -1;
+    }
+
+    /*
     pag->filhos[3] = -1;
     pag->filhos[4] = -1;
+    */
 
     //colocamos na pagina auxiliar pagSplit a outra metade da pagina
     //k é o parâmetro utilizado para pegar a outra metade dos filhos da página
@@ -140,9 +180,15 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     }
     pagSplit.numeroChaves = 2;
 
+    for(i = 0; i < (ORDEM-1)/2 + 1; i++){
+        pagSplit.filhos[i] = filhos[i+k];
+    }
+
+    /*
     pagSplit.filhos[0] = filhos[3];
     pagSplit.filhos[1] = filhos[4];
     pagSplit.filhos[2] = filhos[5];
+    */
 
     //para as demais chaves do nó, atribuímos nulo(-1)
     for(i = (ORDEM-1)/2; i < ORDEM-1; i++){
@@ -154,17 +200,40 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     pagSplit.filhos[3] = -1;
     pagSplit.filhos[4] = -1;
 
+    //Se a página splitada for folha, a nova página será folha. Senão, não será.
+    if(pag->folha == 1){
+        pagSplit.folha = 1;
+    }
+    else{
+        pagSplit.folha = 0;
+    }
+
 
     //Pega o novo RRN para que ele "suba" na recursão
-    (*RRNnovaPagSplit) = getNovoRRN();
+    //É feita verificação de se o arquivo foi aberto corretamente
+    flag = getNovoRRN();
+    if(flag != -1){
+        *RRNnovaPagSplit = flag;
+    }
+    else{
+        printf("Nao foi possivel obter novo RRN a partir do arquivo arvore.idx. Erro 0x0006.\n");
+        return;
+    }
+    
     //Insere a nova página no fim do arquivo de índices
     inserirEmDisco(pagSplit);
     //Atualiza a página que sofreu split
     atualizarIndice(pag, RRNpagAtual);
 
-    //chave 2, intermediária, sobe para o antecessor ao nó atual
-    (*idInserir) = chaves[2][0];
-    (*offSetInserir) = chaves[2][1];
+    //print de teste, checar as chaves
+    for(i = 0; i < ORDEM; i++){
+        printf("chaves[%d][0] = %d\n", i, chaves[i][0]);
+    }
+    printf("chaves[ORDEM/2][0] = %d\n", chaves[ORDEM/2][0]);
+
+    //para o caso ORDEM 5, chave 2, intermediária, sobe para o antecessor ao nó atual
+    (*idInserir) = chaves[ORDEM/2][0];
+    (*offSetInserir) = chaves[ORDEM/2][1];
 
     //se é raiz
     if (RRNpagAtual == (*RRNraiz))
@@ -177,11 +246,37 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         novaRaiz.chaves[0][1] = *offSetInserir;
         novaRaiz.filhos[0] = RRNpagAtual;
         novaRaiz.filhos[1] = *RRNnovaPagSplit;
+        novaRaiz.numeroChaves = 1;
 
-        //Arualiza nova raiz
-        (*RRNraiz) = getNovoRRN();
+        //O resto das chaves, offsets e filhos serão -1.
+        for(i = 1; i < ORDEM-1; i++){
+            for(j = 0; j < 2; j++){
+                novaRaiz.chaves[i][j] = -1;
+            }
+        }
+
+        for(i = 2; i < ORDEM; i++){
+            novaRaiz.filhos[i] = -1;
+        }
+
+        //A raiz nunca será folha após um split.
+        novaRaiz.folha = 0;
+
+        //Atualiza nova raiz
+        //Verificação se foi possível obter novo RRN
+        flag = getNovoRRN();
+        if(flag != -1){
+            *RRNraiz = flag;
+        }
+        else{
+            printf("Nao foi possivel obter novo RRN a partir do arquivo arvore.idx. Erro 0x0007.\n");
+            return;
+        }
+
         //Insere a nova raiz no fim do arquivo de índices
         inserirEmDisco(novaRaiz);
+        //Precisa atualizar o arquivo de índice para marcar o RRN da nova raiz.
+        atualizarRaiz(*RRNraiz);
 
         //A linha abaixo não sei se é necessária, porque estaremos na última volta da recursão/primeira recursão
         //E, assim, não dará problema na função de inserir... Mas deixei aqui pra lembramos de discutir isso
@@ -200,6 +295,10 @@ void inserir(int id, int offSet, int RRNatual, int *RRNraiz, int *precisaInserir
 
     FILE *arqInd;
     arqInd = fopen("arvore.idx", "r+b");
+    if(arqInd == NULL){
+        printf("Nao foi possivel abrir o arquivo arvore.idx para inserir chave. Erro 0x0005.\n");
+        return;
+    }
 
     fseek(arqInd, 2*sizeof(int)+RRNatual*sizeof(PAGINA), SEEK_SET);
     fread(&pagAtual, sizeof(PAGINA), 1, arqInd);
@@ -257,7 +356,7 @@ void inserir(int id, int offSet, int RRNatual, int *RRNraiz, int *precisaInserir
             {
                 int ctrl;
                 //Realiza o deslocamento dos filhos
-                for(ctrl = pagAtual.numeroChaves; ctrl > (posColocar+1); ctrl--)
+                for(ctrl = pagAtual.numeroChaves; ctrl > (posColocar); ctrl--)
                 {
                     pagAtual.filhos[ctrl] = pagAtual.filhos[ctrl-1];
                 }
