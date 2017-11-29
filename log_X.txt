@@ -43,3 +43,57 @@ Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dad
 Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
 Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
 Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 1, vcnvalend, ficapianinho.
+Execucao de operacao de INSERCAO de 2, la, lo.
+Execucao de operacao de INSERCAO de 3, lskdj, sdjs.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 4, lol, lal.
+Execucao de operacao de INSERCAO de 5, oi, tdbom.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 6, oitd, bem.
+Execucao de operacao de INSERCAO de 7, waka, waka.
+Execucao de operacao de INSERCAO de 8, vc, legal.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 3, qlqr, coisa.
+Execucao de operacao de INSERCAO de 4, lol, lal.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 2, lo, la.
+Execucao de operacao de INSERCAO de 1, adoro, rola.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 5, kok, kak.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 13, ro, la.
+Execucao de operacao de INSERCAO de 12, pin, to.
+Execucao de operacao de INSERCAO de 11, vi, tor.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 6, teste, lo.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 7, ja, foi.
+Execucao de operacao de INSERCAO de 9, agora, numfoi.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 1, vaida, bosta.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 14, vaidar, bom.
+Execucao de operacao de INSERCAO de 16, ri, ro.
+Execucao de operacao de INSERCAO de 20, ano, novo.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 21, vida, nova.
+Execucao de operacao de INSERCAO de 22, semestre, cagado.
+Execucao de operacao de INSERCAO de 23, oloko, bisho.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 26, split, funfou.
+Execucao de operacao de INSERCAO de 24, alo, som.
+Execucao de operacao de INSERCAO de 25, ta, cabano.
+Execucao de operacao de INSERCAO de 27, som, alo.
+Execucao de operacao de INSERCAO de 28, david, guetta.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 29, eh, nois.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 32, ta, cabano.
+Execucao de operacao de INSERCAO de 31, vaida, bao.
+Execucao de operacao de INSERCAO de 800, acho, qda.
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.

@@ -120,7 +120,7 @@ void criarArquivoDeIndice(){
             int flag = 1; //variável auxiliar para servir como uma verificação se é necessário inserir a chave
             int passouPorSplit = 0;
             int RRNnovaPagSplit = -1;//pois o split inicial ocorrerá na folha
-            inserir(reg.id, offSet, RRNraiz, &RRNraiz, &flag, &passouPorSplit, &RRNnovaPagSplit);
+            inserir(&reg.id, &offSet, RRNraiz, &RRNraiz, &flag, &passouPorSplit, &RRNnovaPagSplit);
         }
 
         offSet += sizeof(size)+size;
