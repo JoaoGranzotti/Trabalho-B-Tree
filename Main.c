@@ -5,13 +5,13 @@
 
 int main(){
     char entrada[100];
-
     int rodando = 1;
-    int entradaValida = 0;
+    int entradaValida;
     int escolhaMenu;
     int idMusica;
     char ch;
 
+    criarArquivoDeLog(ARQLOG);
     printf("Trabalho Alg. II - Arvore B\n");
     while(rodando == 1){
         printf("Digite o numero da opcao desejada:\n");
@@ -22,11 +22,18 @@ int main(){
         printf("5. Mostrar Arvore-B.\n");
         printf("6. Fechar o programa.\n");
         scanf("%d", &escolhaMenu);
+        entradaValida = 0;
         fflush(stdin);
         system("clear");
         switch(escolhaMenu){
         case 1:
-            criarArquivoDeIndice();
+            while(entradaValida == 0){
+                printf("Digite o nome do arquivo, com extensao, que deseja criar o arquivo de indice:\n");
+                scanf("%s", entrada);
+                entradaValida += verificaEntrada(entrada);
+            }
+            strcat(entrada, ".dat");
+            criarArquivoDeIndice(entrada);
             break;
         case 2:
             printf("Inserir nova musica:\n");
@@ -47,7 +54,6 @@ int main(){
                 scanf("%s", novoRegistro.genero);
                 entradaValida += verificaEntrada(novoRegistro.genero);
             }
-            //problema aqui
             inserirMusica(novoRegistro);
             entradaValida = 0;
             break;

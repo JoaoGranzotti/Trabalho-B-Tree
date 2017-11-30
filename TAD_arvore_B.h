@@ -3,10 +3,14 @@
 
 #define ORDEM 5
 
+#define NAOENCONTRADO -2
+#define ERRO -1
 #define CRIOURAIZ 0
 #define JAEXISTE 1
 #define INSERIUNORMAL 2
 #define INSERIUCOMSPLIT 3
+
+#define ARQIND "arvore.idx"
 
 typedef struct {
     int id;
@@ -27,7 +31,7 @@ typedef struct Pagina{
 
 void inserirEmDisco(PAGINA atual){
     FILE *arqInd;
-    arqInd = fopen("arvore.idx", "ab");
+    arqInd = fopen(ARQIND, "ab");
     if(arqInd == NULL){
         printf("Nao foi possivel abrir o arquivo arvore.idx para escrever uma nova pagina. Erro 0x0001.\n");
         return;
@@ -40,10 +44,10 @@ void inserirEmDisco(PAGINA atual){
 
 int getNovoRRN(){
     FILE *arq;
-    arq = fopen("arvore.idx", "rb");
+    arq = fopen(ARQIND, "rb");
     if(arq == NULL){
         printf("Nao foi possivel abrir o arquivo arvore.idx para obter novo RRN. Erro 0x0002.\n");
-        return -1;
+        return ERRO;
     }
 
     fseek(arq, 0, SEEK_END);
@@ -56,7 +60,7 @@ int getNovoRRN(){
 void atualizarIndice(PAGINA *pag, int RRNpag)
 {
     FILE *arqInd;
-    arqInd = fopen("arvore.idx", "r+b");
+    arqInd = fopen(ARQIND, "r+b");
     if(arqInd == NULL){
         printf("Nao foi possivel abrir o arquivo arvore.idx para atualizar indice. Erro 0x0003.\n");
         return;
@@ -70,7 +74,7 @@ void atualizarIndice(PAGINA *pag, int RRNpag)
 
 void atualizarRaiz(int RRNraiz){
     FILE *arqInd;
-    arqInd = fopen("arvore.idx", "r+b");
+    arqInd = fopen(ARQIND, "r+b");
     if(arqInd == NULL){
         printf("Nao foi possivel abrir o arquivo arvore.idx para atualizar raiz. Erro 0x0004.\n");
         return;
@@ -82,11 +86,47 @@ void atualizarRaiz(int RRNraiz){
     fclose(arqInd);
 }
 
-void busca(int id){
-    
+//Função para encontrar o offSet do id buscado. Começa da raiz.
+int busca(int id, int RRNatual){
+    //Contador
+    int i;
+    //Abrir arquivo de índice para busca
+    FILE *arq = fopen(ARQIND, "rb");
+    //Se não abriu o arquivo,
+    if(arq == NULL){
+        return ERRO;
+    }
+
+    //Struct para pegar a página do arquivo de índices
+    PAGINA buscaPag;
+
+    //Percorrimento no arquivo de índice para pegar a página em disco, e logo fecha o arquivo
+    fseek(arq, 2*sizeof(int) + RRNatual*sizeof(buscaPag), SEEK_SET);
+    fread(&buscaPag, sizeof(buscaPag), 1, arq);
+    fclose(arq);
+
+    //Busca pela chave na página atual
+    for(i = 0; i < buscaPag.numeroChaves && id >= buscaPag.chaves[i][0]; i++){
+        //Se o id estiver na página,
+        if(buscaPag.chaves[i][0] == id){
+            //Retorna o offSet do id
+            printf("Funcao busca - id %d encontrado com offSet %d\n", id, buscaPag.chaves[i][1]);
+            return buscaPag.chaves[i][1];
+        }
+        //senão, continua...
+    }
+    //Aqui, i é a posição que id "deveria estar". Ir para o filho i, se existir.
+
+    if(buscaPag.filhos[i] != -1){
+        return busca(id, buscaPag.filhos[i]);
+    }
+    //Se não existir filho, então a chave não existe na árvore.
+    else{
+        return NAOENCONTRADO;
+    }
 }
 
-//Aqui tem que ir atualizando as páginas no arquivo de índice a cada iteração da recursão?
+//Função para split
 void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RRNpagAtual, int *RRNnovaPagSplit) //falta pegarmos o RRN da raiz
 {
     PAGINA pagSplit;
@@ -215,7 +255,7 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     //Pega o novo RRN para que ele "suba" na recursão
     //É feita verificação de se o arquivo foi aberto corretamente
     flag = getNovoRRN();
-    if(flag != -1){
+    if(flag != ERRO){
         *RRNnovaPagSplit = flag;
     }
     else{
@@ -269,7 +309,7 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         //Atualiza nova raiz
         //Verificação se foi possível obter novo RRN
         flag = getNovoRRN();
-        if(flag != -1){
+        if(flag != ERRO){
             *RRNraiz = flag;
         }
         else{
@@ -298,7 +338,7 @@ void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInser
     PAGINA pagAtual;
 
     FILE *arqInd;
-    arqInd = fopen("arvore.idx", "r+b");
+    arqInd = fopen(ARQIND, "r+b");
     if(arqInd == NULL){
         printf("Nao foi possivel abrir o arquivo arvore.idx para inserir chave. Erro 0x0005.\n");
         return;
@@ -308,18 +348,6 @@ void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInser
     fread(&pagAtual, sizeof(PAGINA), 1, arqInd);
 
     fclose(arqInd);
-
-    /*
-    //Busca pela posição de inserção da chave na página atual
-    for(i = 0; i < pagAtual.numeroChaves && *id >= pagAtual.chaves[i][0]; i++){
-        //Se o id estiver na página,
-        if(pagAtual.chaves[i][0] == *id){
-            //Retorna pois a chave já existe
-            return;
-        }
-        //senão, continua...
-    }
-    */
 
     //Se não é folha, prossegue com a busca
     if(pagAtual.folha == 0){

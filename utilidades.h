@@ -4,7 +4,7 @@
 //função que verifica se não há caracteres especiais em um vetor de char.
 //A função retorna 1 se não houverem caracteres especiais.
 //A função retorna 0 se houverem caracteres especiais.
-int verificaEntrada(char texto[]){
+int verificaEntrada(char texto[], int modo){
     int i = 0;
     char elemento = texto[i];
     while(elemento != '\n' && elemento != '\0'){
@@ -13,7 +13,7 @@ int verificaEntrada(char texto[]){
             elemento = texto[i];
         }
         else{
-            printf("Entrada inválida. '%c', na posicao '%d'\n", elemento, i);
+            printf("Entrada invalida. '%c', na posicao '%d'\n", elemento, i);
             return 0;
         }
     }
@@ -28,7 +28,7 @@ int numeroOuChar(char texto[]){
     char elemento = texto[i];
     while(elemento != '\0'){
         if((elemento >= 'a' && elemento <= 'z')||(elemento >= 'A' && elemento <= 'Z')){
-            printf("Entrada inválida.\n");
+            printf("Entrada invalida.\n");
             return 0;
         }else{
             if(elemento >= '0' && elemento <= '9'){
