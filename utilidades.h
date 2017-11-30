@@ -4,41 +4,55 @@
 //função que verifica se não há caracteres especiais em um vetor de char.
 //A função retorna 1 se não houverem caracteres especiais.
 //A função retorna 0 se houverem caracteres especiais.
-int verificaEntrada(char texto[], int modo){
+
+//Se modo = 1 -> nome de arquivo, então pode acertar _ e .(ver se mais algum caracter...)
+//Se modo = 0 -> entrada comum, nao pode aceitar caracteres especiais
+
+int entradaValida(char texto[], int modo){
     int i = 0;
     char elemento = texto[i];
+
+    if (modo == 0)
+    {
+        while(elemento != '\n' && elemento != '\0'){
+            if((elemento >= 'a' && elemento <= 'z') || (elemento >= 'A' && elemento <= 'Z') || (elemento >= '0' && elemento <= '9') || (elemento == ' ')){
+                i++;
+                elemento = texto[i];
+            }
+            else{
+                return 0;
+            }
+        }
+        return 1;
+    }
+
+    //Senao, se chegou aqui eh nome de arquivo...
     while(elemento != '\n' && elemento != '\0'){
-        if((elemento >= 'a' && elemento <= 'z') || (elemento >= 'A' && elemento <= 'Z') || (elemento >= '0' && elemento <= '9') || (elemento == ' ')){
+        if((elemento >= 'a' && elemento <= 'z') || (elemento >= 'A' && elemento <= 'Z') || (elemento >= '0' && elemento <= '9') || (elemento == ' ') || (elemento == '.') || (elemento == '_')){
             i++;
             elemento = texto[i];
         }
         else{
-            printf("Entrada invalida. '%c', na posicao '%d'\n", elemento, i);
             return 0;
         }
     }
-    texto[i] = '\0';
     return 1;
 }
 
 //retorna 1 se o texto for um numero
 //retorna 0 se o texto não for um numero
-int numeroOuChar(char texto[]){
+int ehNumero(char texto[])
+{
     int i = 0;
     char elemento = texto[i];
     while(elemento != '\0'){
-        if((elemento >= 'a' && elemento <= 'z')||(elemento >= 'A' && elemento <= 'Z')){
-            printf("Entrada invalida.\n");
+        if(elemento >= '0' && elemento <= '9'){
+            i++;
+            elemento = texto[i];
+        }
+        else{
+            //printf("Entrada inválida.\n");
             return 0;
-        }else{
-            if(elemento >= '0' && elemento <= '9'){
-                i++;
-                elemento = texto[i];
-            }
-            else{
-                printf("Entrada inválida.\n");
-                return 0;
-            }
         }
     }
     return 1;

@@ -12,6 +12,19 @@
 //#  DO COM O PDF.             #
 //##############################
 
+//Verifica se arquivo de dados existe, para a criação do arquivo de dados
+int existeArqDados()
+{
+    FILE *arquivo;
+    arquivo = fopen ("dados.dad", "r");
+    if (arquivo == NULL) {
+        fclose(arquivo);
+        return 0;
+    }
+    fclose(arquivo);
+    return 1;
+}
+
 //Abre o arquivo de log, ou o cria se ele não existir
 void criarArquivoDeLog(){
     FILE *arquivo;
@@ -134,7 +147,7 @@ void criarArquivoDeIndice(char nomeArqDados[]){
 
 
     char *mensagem = malloc(100*sizeof(char));
-    sprintf(mensagem, "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados '%s'.\n", nomeArq);
+    sprintf(mensagem, "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados '%s'.\n", nomeArqDados);
     atualizaArquivoDeLog(mensagem, 1);
     free(mensagem);
     fclose (arqdados);
@@ -178,7 +191,7 @@ void pesquisarMusica(int idBusca){
     int RRNraiz;
     int offSet;
     int pos;
-    tRegistro reg; 
+    tRegistro reg;
 
     //Abre o arquivo de índice para obter o RRN raiz
     arq = fopen(ARQIND, "rb");
