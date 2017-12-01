@@ -35,17 +35,18 @@ int main(){
         system("cls"); //No windows, usar system("cls");
         switch(escolhaMenu){
         case 1:
-            do{
+            do {
                 //está lendo sem considerar espacos, e acho q esta correto, ja que nome de arquivo eh bom fazer sem espaço
-                printf("Digite o nome do arquivo, com extensao, que deseja criar o arquivo de indice:\n");
+                printf("Digite o somente o nome do arquivo, sem a extensao, que deseja criar o arquivo de indice:\n");
                 scanf("%s", entrada);
 
                 if(entradaValida(entrada, 1))//1 indica que o modo de validacao esta para nomes de arquivos
                 {
-                    strcat(entrada, ".dat");
+                    strcat(entrada, ".dad");
                     dadoValido = 1;
                 }
-            }while(dadoValido == 0);
+            } while(dadoValido == 0);
+
             dadoValido = 0;
 
             criarArquivoDeIndice(entrada);
@@ -125,7 +126,7 @@ int main(){
             rodando = 0;
             break;
         default:
-            printf("Entrada inválida, digite novamente.\n");
+            printf("Entrada invalida, digite novamente.\n");
             break;
         }
     }

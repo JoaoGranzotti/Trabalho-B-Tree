@@ -41,12 +41,12 @@ void lePaginas(){
     while(fread(&leitura, sizeof(leitura), 1,  arq)){
         printf("Pagina numero %d:\n", i);
         printf("Numero de Chaves: %d\n", leitura.numeroChaves);
-        for(j = 0; j < leitura.numeroChaves; j++){
+        for(j = 0; j < ORDEM-1; j++){
             for(k = 0; k < 2; k++){
                 printf("Chave[%d][%d] = %d\n", j, k, leitura.chaves[j][k]);
             }
         }
-        for(j = 0; j <= leitura.numeroChaves; j++){
+        for(j = 0; j < ORDEM; j++){
             printf("Filhos[%d] = %d\n", j, leitura.filhos[j]);
         }
         printf("%sh folha: %d\n\n", (leitura.folha) ? "E" : "Nao e", leitura.folha);

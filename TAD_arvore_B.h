@@ -173,7 +173,7 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         filhos[i] = filhos[i-1];
     }
 
-    //Neste ponto, ctrl = posColocar
+    //Neste ponto, i = posColocar
     filhos[i] = (*RRNnovaPagSplit);
 
 
@@ -189,12 +189,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     for(i = 0; i < (ORDEM-1)/2 + 1; i++){
         pag->filhos[i] = filhos[i];
     }
-    
-    /*
-    pag->filhos[0] = filhos[0];
-    pag->filhos[1] = filhos[1];
-    pag->filhos[2] = filhos[2];
-    */
 
     //para as demais chaves do nó, atribuímos nulo(-1) tanto para a chave, quanto para seu offset
     for(i = (ORDEM-1)/2; i < ORDEM-1; i++){
@@ -203,14 +197,10 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         }
     }
 
+    //e para os filhos também
     for(i = (ORDEM-1)/2 + 1; i < ORDEM-1; i++){
         pag->filhos[i] = -1;
     }
-
-    /*
-    pag->filhos[3] = -1;
-    pag->filhos[4] = -1;
-    */
 
     //colocamos na pagina auxiliar pagSplit a outra metade da pagina
     //k é o parâmetro utilizado para pegar a outra metade dos filhos da página
@@ -218,7 +208,8 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     int k = (ORDEM-1)/2 + 1;
     for(i = 0; i < (ORDEM-1)/2; i++){
         for(j = 0; j < 2; j++){
-            pagSplit.chaves[i][j] = chaves[i+k][j];//só fazemos isso pra deixar o elemento central do vetor de chaves intacto, para ser usado na promoção
+            pagSplit.chaves[i][j] = chaves[i+k][j];
+            //só fazemos isso pra deixar o elemento central do vetor de chaves intacto, para ser usado na promoção
         }
     }
     pagSplit.numeroChaves = 2;
@@ -227,12 +218,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         pagSplit.filhos[i] = filhos[i+k];
     }
 
-    /*
-    pagSplit.filhos[0] = filhos[3];
-    pagSplit.filhos[1] = filhos[4];
-    pagSplit.filhos[2] = filhos[5];
-    */
-
     //para as demais chaves do nó, atribuímos nulo(-1)
     for(i = (ORDEM-1)/2; i < ORDEM-1; i++){
         for(j = 0; j < 2; j++){
@@ -240,8 +225,10 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         }
     }
 
-    pagSplit.filhos[3] = -1;
-    pagSplit.filhos[4] = -1;
+    //e para os filhos também
+    for(i = (ORDEM-1)/2 + 1; i < ORDEM; i++){
+        pagSplit.filhos[i] = -1;
+    }
 
     //Se a página splitada for folha, a nova página será folha. Senão, não será.
     if(pag->folha == 1){
@@ -250,7 +237,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     else{
         pagSplit.folha = 0;
     }
-
 
     //Pega o novo RRN para que ele "suba" na recursão
     //É feita verificação de se o arquivo foi aberto corretamente

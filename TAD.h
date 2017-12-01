@@ -16,7 +16,7 @@
 int existeArqDados()
 {
     FILE *arquivo;
-    arquivo = fopen ("dados.dad", "r");
+    arquivo = fopen (ARQDADOS, "r");
     if (arquivo == NULL) {
         fclose(arquivo);
         return 0;
@@ -209,11 +209,15 @@ void pesquisarMusica(int idBusca){
     fread(&RRNraiz, sizeof(RRNraiz), 1, arq);
     fclose(arq);
 
+    //Obtém o offset do dado pesquisado
     offSet = busca(idBusca, RRNraiz);
+    //Se deu erro na busca,
     if(offSet == ERRO){
         printf("Nao foi possivel abrir o arquivo arvore.idx para buscar o id %d. Erro 0x1001.\n", idBusca);
+        free(mensagem);
         return;
     }
+    //Se não encontrou o dado,
     else if(offSet == NAOENCONTRADO){
         printf("O id %d nao foi encontrado.\n", idBusca);
         sprintf(mensagem, "Chave %d nao encontrada.\n", idBusca);
@@ -226,6 +230,7 @@ void pesquisarMusica(int idBusca){
     arq = fopen(ARQDADOS, "r");
     if(arq == NULL){
         printf("Erro ao abrir o arquivo de dados. Erro 0x1002.\n");
+        free(mensagem);
         return;
     }
 
