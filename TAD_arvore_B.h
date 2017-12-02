@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "TAD_log.h"
 
 #define ORDEM 5
 
@@ -24,6 +25,18 @@ typedef struct Pagina{
     //define se é folha, folha = 1, não folha = 0
     int folha;
 } PAGINA;
+
+//Função auxiliar que atualiza o offset do cabeçalho do arquivo de índices
+void atualizaOffSetCabecalho(int offSet){
+    //Aqui, se refere ao arquivo de índices
+    FILE *arqind = fopen(ARQIND, "r+b");
+
+    //Pulamos o bit de atualizado e o RRN raiz
+    fseek(arqind, 2*sizeof(int), SEEK_SET);
+    fwrite(&offSet, sizeof(offSet), 1, arqind);
+
+    fclose(arqind);
+}
 
 //Função para inserir uma página no fim do arquivo de índice
 void inserirEmDisco(PAGINA atual){
@@ -130,7 +143,7 @@ int busca(int id, int RRNatual){
 }
 
 //Função para split
-void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RRNpagAtual, int *RRNnovaPagSplit) //falta pegarmos o RRN da raiz
+void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RRNpagAtual, int *RRNnovaPagSplit, int modoLog)
 {
     PAGINA pagSplit;
     int chaves[ORDEM][2];
@@ -278,7 +291,7 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         *RRNnovaPagSplit = flag;
     }
     else{
-        printf("Nao foi possivel obter novo RRN a partir do arquivo %s. Erro 0x0006.\n", ARQIND);
+        printf("Nao foi possivel obter novo RRN a partir do arquivo %s. Erro 0x0005.\n", ARQIND);
         return;
     }
 
@@ -297,6 +310,16 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     //para o caso ORDEM 5, chave 2, intermediária, sobe para o antecessor ao nó atual
     (*idInserir) = chaves[ORDEM/2][0];
     (*offSetInserir) = chaves[ORDEM/2][1];
+
+    //Como houve chave promovida, devemos listar isso no arquivo de log
+    //Se estivermos na funcionalidade 2, colocamos no arquivo de log
+    if(modoLog == FUNC_2){
+        char *mensagem = malloc(50*sizeof(char));
+        sprintf(mensagem, "Chave %d promovida.\n", *idInserir);
+        atualizaArquivoDeLog(mensagem, LOG_MSG_OFF);
+        free(mensagem);
+    }
+
     printf("idInserir = %d, offSetInserir = %d\n", *idInserir, *offSetInserir);
 
     printf("\nPag antiga:");
@@ -357,7 +380,7 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
             *RRNraiz = flag;
         }
         else{
-            printf("Nao foi possivel obter novo RRN a partir do arquivo %s. Erro 0x0007.\n", ARQIND);
+            printf("Nao foi possivel obter novo RRN a partir do arquivo %s. Erro 0x0006.\n", ARQIND);
             return;
         }
 
@@ -365,10 +388,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         inserirEmDisco(novaRaiz);
         //Precisa atualizar o arquivo de índice para marcar o RRN da nova raiz.
         atualizarRaiz(*RRNraiz);
-
-        //A linha abaixo não sei se é necessária, porque estaremos na última volta da recursão/primeira recursão
-        //E, assim, não dará problema na função de inserir... Mas deixei aqui pra lembramos de discutir isso
-        //(*precisaInserir) = 0; //pois chegou na raiz. Logo, não há mais páginas acima
     }
 
     return;
@@ -376,7 +395,7 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
 
 
 //Função de inserção da chave "id" com offset "offSet" na Árvore B. RRNatual começa sendo o da raiz.
-void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInserir, int *passouPorSplit, int *RRNnovaPagSplit){
+void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInserir, int *passouPorSplit, int *RRNnovaPagSplit, int modoLog){
     int i, j;
     int chaveAux[2];
     PAGINA pagAtual;
@@ -384,7 +403,7 @@ void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInser
     FILE *arqInd;
     arqInd = fopen(ARQIND, "r+b");
     if(arqInd == NULL){
-        printf("Nao foi possivel abrir o arquivo %s para inserir chave. Erro 0x0005.\n", ARQIND);
+        printf("Nao foi possivel abrir o arquivo %s para inserir chave. Erro 0x0007.\n", ARQIND);
         return;
     }
 
@@ -401,15 +420,25 @@ void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInser
         }
 
         //recursão para o filho correspondente à chave a ser inserida
-        inserir(id, offSet, pagAtual.filhos[i], RRNraiz, precisaInserir, passouPorSplit, RRNnovaPagSplit);
+        inserir(id, offSet, pagAtual.filhos[i], RRNraiz, precisaInserir, passouPorSplit, RRNnovaPagSplit, modoLog);
     }
 
     if(*precisaInserir)
     {
+        //Se a pagina está cheia, fazer split
         if (pagAtual.numeroChaves >= (ORDEM-1))
         {
+            //Parte destinada para o log
+            //Se for a funcionalidade 2
+            if(modoLog == FUNC_2){
+                char *mensagem = malloc(30*sizeof(char));
+                sprintf(mensagem, "Divisao de no - pagina %d\n", RRNatual);
+                atualizaArquivoDeLog(mensagem, LOG_MSG_OFF);
+                free(mensagem);
+            }
+
             //Nó está cheio, é necessário realizar um split
-            split(&pagAtual, id, offSet, RRNraiz, RRNatual, RRNnovaPagSplit);//Lembrar de fazer cabeçalho com a raiz no arquivo
+            split(&pagAtual, id, offSet, RRNraiz, RRNatual, RRNnovaPagSplit, modoLog);
             (*passouPorSplit) = 1;
         }
         else
@@ -435,10 +464,6 @@ void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInser
             pagAtual.chaves[posColocar][0] = *id;
             pagAtual.chaves[posColocar][1] = *offSet;
             pagAtual.numeroChaves++;
-
-            /*for(i = 0; i < pagAtual.numeroChaves; i++){
-                printf("funcao insercao, chaves[%d][0] = %d\n", i, pagAtual.chaves[i][0]);
-            }*/
 
             //Inserção do filho na posição correta, caso venha de um split
             if((*passouPorSplit) == 1)

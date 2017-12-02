@@ -1,2 +1,73 @@
 Historico das operacoes realizadas no programa:
-Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.
+Execucao de operacao de INSERCAO de 1, a, a.
+Chave 1 inserida com sucesso.
+Execucao de operacao de INSERCAO de 2, a, b.
+Chave 2 inserida com sucesso.
+Execucao de operacao de INSERCAO de 9, a, i.
+Chave 9 inserida com sucesso.
+Execucao de operacao de INSERCAO de 10, a, j.
+Chave 10 inserida com sucesso.
+Execucao de operacao de INSERCAO de 11, a, k.
+Chave 11 inserida com sucesso.
+Divisao de no - pagina 0
+Chave 9 promovida.
+Execucao de operacao de INSERCAO de 3, a, c.
+Chave 3 inserida com sucesso.
+Execucao de operacao de INSERCAO de 4, a, d.
+Chave 4 inserida com sucesso.
+Execucao de operacao de INSERCAO de 5, a, e.
+Chave 5 inserida com sucesso.
+Divisao de no - pagina 0
+Chave 3 promovida.
+Execucao de operacao de INSERCAO de 6, a, f.
+Chave 6 inserida com sucesso.
+Execucao de operacao de INSERCAO de 7, a, g.
+Chave 7 inserida com sucesso.
+Execucao de operacao de INSERCAO de 8, a, h.
+Chave 8 inserida com sucesso.
+Divisao de no - pagina 3
+Chave 6 promovida.
+Execucao de operacao de INSERCAO de 12, a, l.
+Chave 12 inserida com sucesso.
+Execucao de operacao de INSERCAO de 13, a, m.
+Chave 13 inserida com sucesso.
+Execucao de operacao de INSERCAO de 14, a, n.
+Chave 14 inserida com sucesso.
+Divisao de no - pagina 1
+Chave 12 promovida.
+Execucao de operacao de INSERCAO de 15, o, a.
+Chave 15 inserida com sucesso.
+Execucao de operacao de INSERCAO de 16, a, p.
+Chave 16 inserida com sucesso.
+Execucao de operacao de INSERCAO de 17, a, q.
+Chave 17 inserida com sucesso.
+Divisao de no - pagina 5
+Chave 15 promovida.
+Divisao de no - pagina 2
+Chave 9 promovida.
+Execucao de operacao de INSERCAO de 30, a, r.
+Chave 30 inserida com sucesso.
+Execucao de operacao de INSERCAO de 31, a, s.
+Chave 31 inserida com sucesso.
+Execucao de operacao de INSERCAO de 32, a, t.
+Chave 32 inserida com sucesso.
+Divisao de no - pagina 6
+Chave 30 promovida.
+Execucao de operacao de INSERCAO de 33, a, u.
+Chave 33 inserida com sucesso.
+Execucao de operacao de INSERCAO de 34, a, v.
+Chave 34 inserida com sucesso.
+Execucao de operacao de INSERCAO de 29, a, w.
+Chave 29 inserida com sucesso.
+Execucao de operacao de INSERCAO de 28, a, x.
+Chave 28 inserida com sucesso.
+Execucao de operacao de INSERCAO de 27, a, y.
+Chave 27 inserida com sucesso.
+Divisao de no - pagina 6
+Chave 27 promovida.
+Execucao de operacao de INSERCAO de 35, a, z.
+Chave 35 inserida com sucesso.
+Divisao de no - pagina 9
+Chave 33 promovida.
+Divisao de no - pagina 7
+Chave 27 promovida.

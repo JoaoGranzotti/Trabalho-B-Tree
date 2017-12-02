@@ -14,8 +14,8 @@ int main(){
 
     criarArquivoDeLog(ARQLOG);
 
-    /*if (existeArqDados())
-        criarArquivoDeIndice();*/
+    if (existeArqDados())
+        criarArquivoDeIndice(FUNC_0);
 
     printf("Trabalho Alg. II - Arvore B\n");
     while(rodando == 1){
@@ -31,7 +31,7 @@ int main(){
         system("clear"); //No ubuntu, usar system("clear");
         switch(escolhaMenu){
         case 1:
-            criarArquivoDeIndice();
+            criarArquivoDeIndice(FUNC_1);
             break;
         case 2:
             printf("Inserir nova musica:\n");

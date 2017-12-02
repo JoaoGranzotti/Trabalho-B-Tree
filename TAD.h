@@ -3,14 +3,13 @@
 #include <string.h>
 #include "TAD_arvore_B.h"
 
-#define ARQLOG "log_X.txt"
 #define ARQDADOS "dados.dad"
 
-//##############################
-//#  FUNÇÕES PARA ADIMINISTRAR #
-//#  O ARQUIVO DE LOG DE ACOR- #
-//#  DO COM O PDF.             #
-//##############################
+//###############################
+//#   FUNÇÕES PARA MANIPULAR O  #
+//#   ARQUIVO DE DADOS DE ACOR- #
+//#   DO COM O PDF.             #
+//###############################
 
 //Verifica se arquivo de dados existe, para a criação do arquivo de dados
 int existeArqDados()
@@ -26,45 +25,14 @@ int existeArqDados()
     return 1;
 }
 
-//Abre o arquivo de log, ou o cria se ele não existir
-void criarArquivoDeLog(){
-    FILE *arquivo;
-    arquivo = fopen(ARQLOG, "w");
-    if (arquivo == NULL) {
-       printf ("Houve um erro ao abrir o arquivo.\n");
-       return;
-    }
-    fprintf(arquivo, "Historico das operacoes realizadas no programa:\n");
-    printf ("Arquivo de 'log' criado com sucesso.\n");
-    fclose (arquivo);
-}
-
-// coloca as ações no arquivo de log
-void atualizaArquivoDeLog(char linhaAdicionada[], int att){
-    FILE *arquivo;
-    arquivo = fopen (ARQLOG, "a");
-    if (arquivo == NULL) {
-       printf ("Houve um erro ao abrir o arquivo.\n");
-       return;
-    }
-    fprintf(arquivo, linhaAdicionada);
-    if(att == 1)
-        printf ("Arquivo de 'log' atualizado com sucesso.\n");
-
-    fclose (arquivo);
-}
-
-//###############################
-//#   FUNÇÕES PARA MANIPULAR O  #
-//#   ARQUIVO DE DADOS DE ACOR- #
-//#   DO COM O PDF.             #
-//###############################
-
+//Função que divide o registro com as barras | e atribui para um vetor
 int camp_var_reg_var(tRegistro e, char *buffer) {
      sprintf(buffer, "|%d|%s|%s|", e.id, e.titulo, e.genero);
      return strlen(buffer);
 }
 
+
+//Função que identifica as posições que possuem | e removem o caracter
 char *parser(char *buffer, int *pos) {
     int posi = *pos;
 
@@ -77,7 +45,7 @@ char *parser(char *buffer, int *pos) {
 }
 
 // vai pegar as informações do arquivo de dados para criar a partir dele o arquivo de indices
-void criarArquivoDeIndice(){
+void criarArquivoDeIndice(int modoLog){
     //Abrir os arquivos de dados e índice, o primeiro como leitura e o segundo como escrita
     FILE *arqdados, *arqind;
     arqdados = fopen (ARQDADOS, "rb");
@@ -85,11 +53,11 @@ void criarArquivoDeIndice(){
 
     //Se não deu para abrir um deles
     if (arqdados == NULL) {
-       printf ("Houve um erro ao abrir o arquivo de dados.\n");
+       printf ("Houve um erro ao abrir o arquivo de dados %s. Erro 0x1000.\n", ARQDADOS);
        return;
     }
     if(arqind == NULL){
-        printf ("Houve um erro ao abrir o arquivo de indices.\n");
+        printf ("Houve um erro ao abrir o arquivo de indices %s. Erro 0x1001.\n", ARQIND);
         return;
     }
 
@@ -161,51 +129,144 @@ void criarArquivoDeIndice(){
                                       //pois o split inicial ocorrerá na folha
             int offSetAux = offSet; //atribuimos o offset para uma variável auxiliar para não perder o valor
 
-            inserir(&reg.id, &offSetAux, RRNraiz, &RRNraiz, &flag, &passouPorSplit, &RRNnovaPagSplit);
+            inserir(&reg.id, &offSetAux, RRNraiz, &RRNraiz, &flag, &passouPorSplit, &RRNnovaPagSplit, FUNC_1);
         }
 
         //offSet pula o tamanho do registro para ir para o próximo
         offSet += sizeof(size)+size;
+
+        //Como offSet, agora, é o offSet do próximo elemento a ser inserido, registramos ele
+        //no cabeçalho do arquivo de índices
+        atualizaOffSetCabecalho(offSet);
     }
 
     //Operação de escrever no log
-    char *mensagem = malloc(100*sizeof(char));
-    sprintf(mensagem, "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados '%s'.\n", "dados.dad");
-    atualizaArquivoDeLog(mensagem, 1);
-    free(mensagem);
+    //Somente escreve no log se for feita a operação 1.
+    if(modoLog == FUNC_1){
+        char *mensagem = malloc(100*sizeof(char));
+        sprintf(mensagem, "Execucao da criacao do arquivo de indice %s com base no arquivo de dados %s.\n", ARQIND, ARQDADOS);
+        atualizaArquivoDeLog(mensagem, LOG_MSG_ON);
+        free(mensagem);
+    }
 
     //Fecha arquivos de dados, pois o de índice já foi fechado antes
     fclose (arqdados);
 }
 
-void inserirMusicaInd(int id, int offSet){
-
-}
-
 //Insere as musicas no arquivo dados.dad
 void inserirMusica(tRegistro novoRegistro){
     char size;
-    int i, pos;
+    int i, j, pos;
     char buffer[1000];
+    char *mensagem = malloc(100*sizeof(char));
+    int RRNraiz;
+    int offsetNovaChave;
+    int flagBusca;
+    long tamArq;
 
-    FILE *arquivo;
-    arquivo = fopen (ARQDADOS, "ab");
-    if (arquivo == NULL) {
-       printf ("Houve um erro ao abrir o arquivo.\n");
+    //Essa parte escreve o que foi feito no arquivo de log: inserção de um elemento
+    sprintf(mensagem, "Execucao de operacao de INSERCAO de %d, %s, %s.\n", novoRegistro.id, novoRegistro.titulo, novoRegistro.genero);
+    atualizaArquivoDeLog(mensagem, LOG_MSG_ON);
+
+    //Abrimos o arquivo de dados e o de indices para escrever o novo dado
+    FILE *arqdados, *arqind;
+    //Abrimos como append para escrever no fim
+    arqdados = fopen (ARQDADOS, "ab");
+    if (arqdados == NULL) {
+       printf ("Houve um erro ao abrir o arquivo de dados %s. Erro 0x1002.\n", ARQDADOS);
        return;
     }
 
-    size = camp_var_reg_var(novoRegistro, buffer);
-    fwrite(&size, sizeof(size), 1, arquivo);
-    fwrite(buffer, size, 1, arquivo);
+    //Abrimos como r+ para começarmos no início do arquivo e pegarmos o RRN da raiz para a posterior busca
+    //e o offset da nova chave a ser inserida
+    arqind = fopen(ARQIND, "r+b");
+    if(arqind == NULL){
+        printf("Houve um erro ao abrir o arquivo de indice %s. Erro 0x1003.\n", ARQIND);
+        return;
+    }
 
-    printf ("Arquivo de 'dados' atualizado com sucesso.\n");
-    fclose (arquivo);
+    //Vamos até o fim do arquivo para ver o tamanho do arquivo
+    fseek(arqind, 0, SEEK_END);
+    tamArq = ftell(arqind);
 
-    //Essa parte escreve o que foi feito no arquivo de log
-    char *mensagem = malloc(100*sizeof(char));
-    sprintf(mensagem, "Execucao de operacao de INSERCAO de %d, %s, %s.\n", novoRegistro.id, novoRegistro.titulo, novoRegistro.genero);
-    atualizaArquivoDeLog(mensagem, 1);
+    //E já voltamos para o começo do arquivo, pulando o bit de atualizado
+    fseek(arqind, sizeof(int), SEEK_SET);
+
+    //Se estiver vazio, ou seja, só tiver o bit de atualizado,
+    if(tamArq == sizeof(int)){
+        //Temos nossa primeira raiz, e já inserimos o RRN raiz e o offset da nova chave no cabeçalho
+        RRNraiz = 0;
+        offsetNovaChave = 0;
+
+        //Inserimos uma página vazia
+        PAGINA novaPag;
+        //Para não dar erro, enchemos ela com -1
+        for(i = 0; i < ORDEM-1; i++){
+            for(j = 0; j < 2; j++){
+                novaPag.chaves[i][j] = -1;
+            }
+        }
+        for(i = 0; i < ORDEM; i++){
+            novaPag.filhos[i] = -1;
+        }
+        novaPag.numeroChaves = 0;
+        novaPag.folha = 1;
+
+        //Inserimos as informações no arquivo de índices
+        fwrite(&RRNraiz, sizeof(RRNraiz), 1, arqind);
+        fwrite(&offsetNovaChave, sizeof(offsetNovaChave), 1, arqind);
+        fwrite(&novaPag, sizeof(novaPag), 1, arqind);
+    }
+    //Se não estiver vazio:
+    else{
+        //Pegamos o RRN da raiz e o offset da proxima chave a ser inserida
+        fread(&RRNraiz, sizeof(RRNraiz), 1, arqind);
+        fread(&offsetNovaChave, sizeof(offsetNovaChave), 1, arqind);
+    }
+    //Fechamos o arquivo pois não precisamos mais dele nessa função
+    fclose(arqind);
+
+    //Buscamos o id passado a partir da raiz
+    flagBusca = busca(novoRegistro.id, RRNraiz);
+
+    //Se deu erro, informamos que deu erro
+    if(flagBusca == ERRO){
+        printf("Ocorreu erro ao buscar o id no arquivo de indice %s. Erro 0x1004.\n", ARQIND);
+    }
+    //Se não encontramos, inserimos normalmente
+    else if(flagBusca == NAOENCONTRADO){
+        //Inserindo no aquivo de dados
+        size = camp_var_reg_var(novoRegistro, buffer);
+        fwrite(&size, sizeof(size), 1, arqdados);
+        fwrite(buffer, size, 1, arqdados);
+
+        //Inserindo no arquivo de índice
+        int flag = 1; //variável auxiliar para servir como uma verificação se é necessário inserir a chave
+        int passouPorSplit = 0; //variável auxiliar que avisará se houve um split
+        int RRNnovaPagSplit = -1; //variável para retornar o RRN da página splitada, e é igual a -1
+                                  //pois o split inicial ocorrerá na folha
+        int offSetAux = offsetNovaChave; //atribuimos o offset para uma variável auxiliar para não perder o valor
+        inserir(&novoRegistro.id, &offSetAux, RRNraiz, &RRNraiz, &flag, &passouPorSplit, &RRNnovaPagSplit, FUNC_2);
+        
+        //Atualizamos o offset do cabeçalho para futura inserção
+        offsetNovaChave += sizeof(size)+size;
+        atualizaOffSetCabecalho(offsetNovaChave);
+
+        //Parte destinada para o log
+        sprintf(mensagem, "Chave %d inserida com sucesso.\n", novoRegistro.id);
+        atualizaArquivoDeLog(mensagem, LOG_MSG_ON);
+
+        printf ("Arquivo %s e %s atualizados com sucesso.\n", ARQDADOS, ARQIND);
+    }
+    //Se encontrou
+    else{
+        printf("O id ja existe! Nao houve insercao da chave no arquivo de indices %s. Erro 0x1005.\n", ARQIND);
+        //Parte destinada para o log
+        sprintf(mensagem, "Chave %d duplicada.\n", novoRegistro.id);
+        atualizaArquivoDeLog(mensagem, LOG_MSG_ON);
+    }
+
+    fclose (arqdados);
     free(mensagem);
 }
 
@@ -224,28 +285,33 @@ void pesquisarMusica(int idBusca){
     //Abre o arquivo de índice para obter o RRN raiz
     arq = fopen(ARQIND, "rb");
     if(arq == NULL){
-        printf("Erro ao abrir o arquivo de indice. Erro 0x1000.\n");
+        printf("Erro ao abrir o arquivo de indice %s. Erro 0x1006.\n", ARQIND);
         return;
     }
 
+    //Já escrevemos no arquivo de log que estamos na operação de busca.
     mensagem = malloc(100*sizeof(char));
-    sprintf(mensagem, "Execucao de operacao de PESQUISA de %d\n", idBusca);
-    atualizaArquivoDeLog(mensagem, 0);
+    sprintf(mensagem, "Execucao de operacao de PESQUISA de %d.\n", idBusca);
+    atualizaArquivoDeLog(mensagem, LOG_MSG_OFF);
 
     //Pega o RRN raiz.
     fseek(arq, sizeof(int), SEEK_SET);
     fread(&RRNraiz, sizeof(RRNraiz), 1, arq);
     fclose(arq);
 
+    //É feita a busca pelo offSet do id.
     offSet = busca(idBusca, RRNraiz);
+
+    //Se deu erro,
     if(offSet == ERRO){
-        printf("Nao foi possivel abrir o arquivo arvore.idx para buscar o id %d. Erro 0x1001.\n", idBusca);
+        printf("Nao foi possivel abrir o arquivo %s para buscar o id %d. Erro 0x1007.\n", ARQIND, idBusca);
         return;
     }
+    //Se não encontrou,
     else if(offSet == NAOENCONTRADO){
         printf("O id %d nao foi encontrado.\n", idBusca);
         sprintf(mensagem, "Chave %d nao encontrada.\n", idBusca);
-        atualizaArquivoDeLog(mensagem, 1);
+        atualizaArquivoDeLog(mensagem, LOG_MSG_ON);
         free(mensagem);
         return;
     }
@@ -253,7 +319,7 @@ void pesquisarMusica(int idBusca){
     //Abre o arquivo de dados para obter o registro pesquisado.
     arq = fopen(ARQDADOS, "r");
     if(arq == NULL){
-        printf("Erro ao abrir o arquivo de dados. Erro 0x1002.\n");
+        printf("Erro ao abrir o arquivo de dados %s. Erro 0x1008.\n", ARQDADOS);
         return;
     }
 
@@ -269,11 +335,11 @@ void pesquisarMusica(int idBusca){
 
     printf("Registro encontrado:\nid = %d\ntitulo = %s\ngenero = %s\n", reg.id, reg.titulo, reg.genero);
 
-    //Essa parte escreve o que foi feito no arquivo de log
+    //Escreve o que foi feito no arquivo de log
     sprintf(mensagem, "Chave %d encontrada, offset %d,\n"
-                      "Titulo: %s, Genero: %s\n",
+                      "Titulo: %s, Genero: %s.\n",
                       reg.id, offSet, reg.titulo, reg.genero);
-    atualizaArquivoDeLog(mensagem, 1);
+    atualizaArquivoDeLog(mensagem, LOG_MSG_ON);
     free(mensagem);
 
     return;
