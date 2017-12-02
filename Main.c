@@ -10,14 +10,10 @@ int main(){
     int rodando = 1;
     int escolhaMenu;
     int idMusica;
-    char ch; //ver se está sendo usada
     char id[3], titulo[30], genero[20];
 
     criarArquivoDeLog(ARQLOG);
 
-    //Se ela quer que leia do usuario o nome do arquivo de dados,
-    //tem que ver como vamos fazer a criacao do de indices,
-    //sem que o usuario tenha interagido com o programa
     /*if (existeArqDados())
         criarArquivoDeIndice();*/
 
@@ -32,24 +28,10 @@ int main(){
         printf("6. Fechar o programa.\n");
         scanf("%d", &escolhaMenu);
         fflush(stdin);
-        system("cls"); //No windows, usar system("cls");
+        system("clear"); //No ubuntu, usar system("clear");
         switch(escolhaMenu){
         case 1:
-            do {
-                //está lendo sem considerar espacos, e acho q esta correto, ja que nome de arquivo eh bom fazer sem espaço
-                printf("Digite o somente o nome do arquivo, sem a extensao, que deseja criar o arquivo de indice:\n");
-                scanf("%s", entrada);
-
-                if(entradaValida(entrada, 1))//1 indica que o modo de validacao esta para nomes de arquivos
-                {
-                    strcat(entrada, ".dad");
-                    dadoValido = 1;
-                }
-            } while(dadoValido == 0);
-
-            dadoValido = 0;
-
-            criarArquivoDeIndice(entrada);
+            criarArquivoDeIndice();
             break;
         case 2:
             printf("Inserir nova musica:\n");
@@ -67,32 +49,33 @@ int main(){
                         novoRegistro.id = idAux;
                         dadoValido = 1;
                     }
+                    else{
+                        printf("Entrada invalida. Digite um id entre 0 e 255 exclusive.\n");
+                    }
                 }
-            }while(!dadoValido);
+            } while(!dadoValido);
             dadoValido = 0;
 
             do{
                 printf("Digite o titulo da musica:\n");
-                scanf("%[^\n]s", titulo);
-                fflush(stdin);
-                if (entradaValida(titulo, 0))//0 indica que o modo de validacao esta para entradas comuns
+                scanf("%s", titulo);
+                if (entradaValida(titulo))
                 {
                     strcpy(novoRegistro.titulo, titulo);
                     dadoValido = 1;
                 }
-            }while(!dadoValido);
+            } while(!dadoValido);
             dadoValido = 0;
 
             do{
                 printf("Digite o genero da musica:\n");
-                scanf("%[^\n]s", genero);
-                fflush(stdin);
-                if (entradaValida(genero, 0))//0 indica que o modo de validacao esta para entradas comuns
+                scanf("%s", genero);
+                if (entradaValida(genero))
                 {
                     strcpy(novoRegistro.genero, genero);
                     dadoValido = 1;
                 }
-            }while(!dadoValido);
+            } while(!dadoValido);
             dadoValido = 0;
 
             inserirMusica(novoRegistro);
@@ -110,23 +93,21 @@ int main(){
                 }
                 else
                 {
-                    printf("Erro, id fora do limite permitido(0<id<255).\n");
+                    printf("Erro, id fora do limite permitido (0 < id < 255).\n");
                 }
             }
             break;
         case 4:
-            printf("Digite um numero inteiro com ID da musica a ser removida:");
-            scanf("%d", &idMusica);
-            removerMusica(idMusica);
+            printf("\nNão implementado.\n");
             break;
         case 5:
-            mostrarArvore();
+            printf("\nNão implementado.\n");
             break;
         case 6:
             rodando = 0;
             break;
         default:
-            printf("Entrada invalida, digite novamente.\n");
+            printf("Entrada inválida, digite novamente.\n");
             break;
         }
     }

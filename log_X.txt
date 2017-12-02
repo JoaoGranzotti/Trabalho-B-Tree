@@ -1,1 +1,2 @@
 Historico das operacoes realizadas no programa:
+Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados 'dados.dad'.

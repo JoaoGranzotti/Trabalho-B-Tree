@@ -4,35 +4,17 @@
 //função que verifica se não há caracteres especiais em um vetor de char.
 //A função retorna 1 se não houverem caracteres especiais.
 //A função retorna 0 se houverem caracteres especiais.
-
-//Se modo = 1 -> nome de arquivo, então pode acertar _ e .(ver se mais algum caracter...)
-//Se modo = 0 -> entrada comum, nao pode aceitar caracteres especiais
-
-int entradaValida(char texto[], int modo){
+int entradaValida(char texto[]){
     int i = 0;
     char elemento = texto[i];
 
-    if (modo == 0)
-    {
-        while(elemento != '\n' && elemento != '\0'){
-            if((elemento >= 'a' && elemento <= 'z') || (elemento >= 'A' && elemento <= 'Z') || (elemento >= '0' && elemento <= '9') || (elemento == ' ')){
-                i++;
-                elemento = texto[i];
-            }
-            else{
-                return 0;
-            }
-        }
-        return 1;
-    }
-
-    //Senao, se chegou aqui eh nome de arquivo...
     while(elemento != '\n' && elemento != '\0'){
-        if((elemento >= 'a' && elemento <= 'z') || (elemento >= 'A' && elemento <= 'Z') || (elemento >= '0' && elemento <= '9') || (elemento == ' ') || (elemento == '.') || (elemento == '_')){
+        if((elemento >= 'a' && elemento <= 'z') || (elemento >= 'A' && elemento <= 'Z') || (elemento >= '0' && elemento <= '9') || (elemento == ' ')){
             i++;
             elemento = texto[i];
         }
         else{
+            printf("Entrada invalida.\n");
             return 0;
         }
     }
@@ -51,7 +33,7 @@ int ehNumero(char texto[])
             elemento = texto[i];
         }
         else{
-            //printf("Entrada inválida.\n");
+            printf("Entrada invalida.\n");
             return 0;
         }
     }

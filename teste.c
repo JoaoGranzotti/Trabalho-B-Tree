@@ -31,11 +31,13 @@ void lePaginas(){
 
     int i = 0;
     int j, k;
-    int att, RRNraiz;
+    int att, offSet, RRNraiz;
 
     fread(&att, sizeof(att), 1, arq);
     fread(&RRNraiz, sizeof(RRNraiz), 1, arq);
+    fread(&offSet, sizeof(offSet), 1, arq);
     printf("Atualizado: %d\n", att);
+    printf("offSet para inserir o proximo: %d\n", offSet);
     printf("RRN raiz = %d\n", RRNraiz);
 
     while(fread(&leitura, sizeof(leitura), 1,  arq)){

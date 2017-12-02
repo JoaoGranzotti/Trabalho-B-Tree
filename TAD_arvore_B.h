@@ -5,10 +5,6 @@
 
 #define NAOENCONTRADO -2
 #define ERRO -1
-#define CRIOURAIZ 0
-#define JAEXISTE 1
-#define INSERIUNORMAL 2
-#define INSERIUCOMSPLIT 3
 
 #define ARQIND "arvore.idx"
 
@@ -29,11 +25,12 @@ typedef struct Pagina{
     int folha;
 } PAGINA;
 
+//Função para inserir uma página no fim do arquivo de índice
 void inserirEmDisco(PAGINA atual){
     FILE *arqInd;
     arqInd = fopen(ARQIND, "ab");
     if(arqInd == NULL){
-        printf("Nao foi possivel abrir o arquivo arvore.idx para escrever uma nova pagina. Erro 0x0001.\n");
+        printf("Nao foi possivel abrir o arquivo %s para escrever uma nova pagina. Erro 0x0001.\n", ARQIND);
         return;
     }
 
@@ -42,11 +39,12 @@ void inserirEmDisco(PAGINA atual){
     fclose(arqInd);
 }
 
+//Função que obtém o RRN de uma nova página a ser inserida no fim do arquivo
 int getNovoRRN(){
     FILE *arq;
     arq = fopen(ARQIND, "rb");
     if(arq == NULL){
-        printf("Nao foi possivel abrir o arquivo arvore.idx para obter novo RRN. Erro 0x0002.\n");
+        printf("Nao foi possivel abrir o arquivo %s para obter novo RRN. Erro 0x0002.\n", ARQIND);
         return ERRO;
     }
 
@@ -54,32 +52,37 @@ int getNovoRRN(){
     long tam = ftell(arq);
     fclose(arq);
 
-    return (tam-sizeof(int))/sizeof(PAGINA);
+    //O RRN novo é o tamanho do arquivo, tirando as flags iniciais, dividido
+    //pelo tamanho de cada página.
+    return (tam-3*sizeof(int))/sizeof(PAGINA);
 }
 
+//Função que atualiza uma página já existente no arquivo de índice
 void atualizarIndice(PAGINA *pag, int RRNpag)
 {
     FILE *arqInd;
     arqInd = fopen(ARQIND, "r+b");
     if(arqInd == NULL){
-        printf("Nao foi possivel abrir o arquivo arvore.idx para atualizar indice. Erro 0x0003.\n");
+        printf("Nao foi possivel abrir o arquivo %s para atualizar indice. Erro 0x0003.\n", ARQIND);
         return;
     }
 
-    fseek(arqInd, 2*sizeof(int)+RRNpag*sizeof(PAGINA), SEEK_SET);
+    fseek(arqInd, 3*sizeof(int)+RRNpag*sizeof(PAGINA), SEEK_SET);
     fwrite(pag, sizeof(PAGINA), 1, arqInd);
 
     fclose(arqInd);
 }
 
+//Função para atualizar o RRN da raiz. Utilizada quando há split na página raiz.
 void atualizarRaiz(int RRNraiz){
     FILE *arqInd;
     arqInd = fopen(ARQIND, "r+b");
     if(arqInd == NULL){
-        printf("Nao foi possivel abrir o arquivo arvore.idx para atualizar raiz. Erro 0x0004.\n");
+        printf("Nao foi possivel abrir o arquivo %s para atualizar raiz. Erro 0x0004.\n", ARQIND);
         return;
     }
 
+    //É pulado um int pois ele se refere ao bit de atualizado.
     fseek(arqInd, sizeof(int), SEEK_SET);
     fwrite(&RRNraiz, sizeof(RRNraiz), 1, arqInd);
 
@@ -101,7 +104,7 @@ int busca(int id, int RRNatual){
     PAGINA buscaPag;
 
     //Percorrimento no arquivo de índice para pegar a página em disco, e logo fecha o arquivo
-    fseek(arq, 2*sizeof(int) + RRNatual*sizeof(buscaPag), SEEK_SET);
+    fseek(arq, 3*sizeof(int) + RRNatual*sizeof(buscaPag), SEEK_SET);
     fread(&buscaPag, sizeof(buscaPag), 1, arq);
     fclose(arq);
 
@@ -135,10 +138,26 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     int i, j;
     int flag;
 
+    printf("\nNumero chaves: %d\n", pag->numeroChaves);
+    for(i = 0; i < ORDEM-1; i++){
+        for(j = 0; j < 2; j++){
+            printf("pag->chaves[%d][%d] = %d\n", i, j, pag->chaves[i][j]);
+        }
+    }
+    for(i = 0; i < ORDEM; i++){
+        printf("pag->filhos[%d] = %d\n", i, pag->filhos[i]);
+    }
+    printf("Folha: %d\n\n", pag->folha);
+
+    //Posição da chave que será promovida. Válido para qualquer ordem.
+    int posPromo = ORDEM/2;
+
     //atribuição das informações das chaves da página atual ao vetor auxiliar de chaves
-    for (i = 0; i < pag->numeroChaves; i++)
+    for (i = 0; i < ORDEM-1; i++)
     {
         chaves[i][0] = pag->chaves[i][0];
+        printf("\npag->chaves[%d][0] = %d\n", i, pag->chaves[i][0]);
+        printf("chaves[%d][0] = %d\n\n", i, chaves[i][0]);
         chaves[i][1] = pag->chaves[i][1];
         filhos[i] = pag->filhos[i];
     }
@@ -146,17 +165,24 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     filhos[i] = pag->filhos[i];
 
     //Verificação do local de inserção da chave no vetor auxiliar de chaves
-    for (i = 0; i < (ORDEM-1) && *idInserir > chaves[i][0]; i++)
+    for (i = 0; i < ORDEM && *idInserir > chaves[i][0]; i++)
     {
         //Não precisa de código aqui dentro...
     }
 
+    int posColocar;
 
-    int posColocar = i;
+    //Caso *idInserir seja maior que todas as chaves, chegaremos numa posição inválida.
+    //O if abaixo trata isso. Se é a maior chave, posColocar é a última posição válida
+    if(i == ORDEM)
+        posColocar = ORDEM-1;
+    else
+        posColocar = i;
+    printf("posColocar no split = %d\n\n", posColocar);
 
     //Inserção ordenada
     //Shift dos elementos maiores que o a ser inserido
-    for (i = (ORDEM-1) ; i > posColocar; i--)
+    for (i = ORDEM-1; i > posColocar; i--)
     {
         chaves[i][0] = chaves[i-1][0];
         chaves[i][1] = chaves[i-1][1];
@@ -177,56 +203,63 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     filhos[i] = (*RRNnovaPagSplit);
 
 
-    //i vai até (ORDEM-1)/2 = 2 por ser o tamanho minimo de chaves numa pagina
-    for(i = 0; i < (ORDEM-1)/2; i++){
+    //i vai até posPromo, pois todas as chaves antes dessa posição são da página antiga
+    for(i = 0; i < posPromo; i++){
         for(j = 0; j < 2; j++){
             pag->chaves[i][j] = chaves[i][j];
         }
     }
-    pag->numeroChaves = 2;
+    //Coincidentemente, o número de chaves na página antiga é igual a posPromo também,
+    //pelo cálculo ser o mesmo
+    pag->numeroChaves = posPromo;
 
-    //Filhos da página original(da esquerda)
-    for(i = 0; i < (ORDEM-1)/2 + 1; i++){
+    //Filhos da página original serão os filhos do vetor auxiliar até a posição posPromo
+    for(i = 0; i <= posPromo; i++){
         pag->filhos[i] = filhos[i];
     }
 
     //para as demais chaves do nó, atribuímos nulo(-1) tanto para a chave, quanto para seu offset
-    for(i = (ORDEM-1)/2; i < ORDEM-1; i++){
+    for(i = posPromo; i < ORDEM-1; i++){
         for(j = 0; j < 2; j++){
             pag->chaves[i][j] = -1;
         }
     }
 
     //e para os filhos também
-    for(i = (ORDEM-1)/2 + 1; i < ORDEM-1; i++){
+    for(i = posPromo+1; i < ORDEM; i++){
         pag->filhos[i] = -1;
     }
 
     //colocamos na pagina auxiliar pagSplit a outra metade da pagina
     //k é o parâmetro utilizado para pegar a outra metade dos filhos da página
     //Para ORDEM = 5, k = 3.
-    int k = (ORDEM-1)/2 + 1;
-    for(i = 0; i < (ORDEM-1)/2; i++){
+    int k = ORDEM/2 + 1;
+
+    //Atribuindo as chaves para a página nova advinda do split
+    for(i = 0; i+k < ORDEM; i++){
         for(j = 0; j < 2; j++){
             pagSplit.chaves[i][j] = chaves[i+k][j];
             //só fazemos isso pra deixar o elemento central do vetor de chaves intacto, para ser usado na promoção
         }
     }
-    pagSplit.numeroChaves = 2;
 
-    for(i = 0; i < (ORDEM-1)/2 + 1; i++){
+    //O número de chaves da página nova advinda do split é:
+    pagSplit.numeroChaves = (ORDEM-1)/2;
+
+    //Os filhos de pagSplit terão o mesmo deslocamento k e irão com i até posPromo
+    for(i = 0; i+k <= ORDEM; i++){
         pagSplit.filhos[i] = filhos[i+k];
     }
 
     //para as demais chaves do nó, atribuímos nulo(-1)
-    for(i = (ORDEM-1)/2; i < ORDEM-1; i++){
+    for(i = ORDEM - k; i < ORDEM-1; i++){
         for(j = 0; j < 2; j++){
             pagSplit.chaves[i][j] = -1;
         }
     }
 
     //e para os filhos também
-    for(i = (ORDEM-1)/2 + 1; i < ORDEM; i++){
+    for(i = ORDEM - k + 1; i < ORDEM; i++){
         pagSplit.filhos[i] = -1;
     }
 
@@ -245,10 +278,10 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         *RRNnovaPagSplit = flag;
     }
     else{
-        printf("Nao foi possivel obter novo RRN a partir do arquivo arvore.idx. Erro 0x0006.\n");
+        printf("Nao foi possivel obter novo RRN a partir do arquivo %s. Erro 0x0006.\n", ARQIND);
         return;
     }
-    
+
     //Insere a nova página no fim do arquivo de índices
     inserirEmDisco(pagSplit);
     //Atualiza a página que sofreu split
@@ -258,12 +291,37 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     for(i = 0; i < ORDEM; i++){
         printf("chaves[%d][0] = %d\n", i, chaves[i][0]);
     }
+    printf("ORDEM/2 = %d\n", ORDEM/2);
     printf("chaves[ORDEM/2][0] = %d\n", chaves[ORDEM/2][0]);
 
     //para o caso ORDEM 5, chave 2, intermediária, sobe para o antecessor ao nó atual
     (*idInserir) = chaves[ORDEM/2][0];
     (*offSetInserir) = chaves[ORDEM/2][1];
     printf("idInserir = %d, offSetInserir = %d\n", *idInserir, *offSetInserir);
+
+    printf("\nPag antiga:");
+    printf("\nNumero chaves: %d\n", pag->numeroChaves);
+    for(i = 0; i < ORDEM-1; i++){
+        for(j = 0; j < 2; j++){
+            printf("pag->chaves[%d][%d] = %d\n", i, j, pag->chaves[i][j]);
+        }
+    }
+    for(i = 0; i < ORDEM; i++){
+        printf("pag->filhos[%d] = %d\n", i, pag->filhos[i]);
+    }
+    printf("Folha: %d\n\n", pag->folha);
+
+    printf("PagSplit:");
+    printf("\nNumero chaves: %d\n", pagSplit.numeroChaves);
+    for(i = 0; i < ORDEM-1; i++){
+        for(j = 0; j < 2; j++){
+            printf("pag->chaves[%d][%d] = %d\n", i, j, pagSplit.chaves[i][j]);
+        }
+    }
+    for(i = 0; i < ORDEM; i++){
+        printf("pag->filhos[%d] = %d\n", i, pagSplit.filhos[i]);
+    }
+    printf("Folha: %d\n\n", pagSplit.folha);
 
     //se é raiz
     if (RRNpagAtual == (*RRNraiz))
@@ -299,7 +357,7 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
             *RRNraiz = flag;
         }
         else{
-            printf("Nao foi possivel obter novo RRN a partir do arquivo arvore.idx. Erro 0x0007.\n");
+            printf("Nao foi possivel obter novo RRN a partir do arquivo %s. Erro 0x0007.\n", ARQIND);
             return;
         }
 
@@ -326,17 +384,22 @@ void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInser
     FILE *arqInd;
     arqInd = fopen(ARQIND, "r+b");
     if(arqInd == NULL){
-        printf("Nao foi possivel abrir o arquivo arvore.idx para inserir chave. Erro 0x0005.\n");
+        printf("Nao foi possivel abrir o arquivo %s para inserir chave. Erro 0x0005.\n", ARQIND);
         return;
     }
 
-    fseek(arqInd, 2*sizeof(int)+RRNatual*sizeof(PAGINA), SEEK_SET);
+    fseek(arqInd, 3*sizeof(int)+RRNatual*sizeof(PAGINA), SEEK_SET);
     fread(&pagAtual, sizeof(PAGINA), 1, arqInd);
 
     fclose(arqInd);
 
     //Se não é folha, prossegue com a busca
     if(pagAtual.folha == 0){
+        //Busca pela posição que deveria estar
+        for(i = 0; i < pagAtual.numeroChaves && *id >= pagAtual.chaves[i][0]; i++){
+            //Não precisa de código. O for terminará com i na posição que queremos.
+        }
+
         //recursão para o filho correspondente à chave a ser inserida
         inserir(id, offSet, pagAtual.filhos[i], RRNraiz, precisaInserir, passouPorSplit, RRNnovaPagSplit);
     }
@@ -357,7 +420,7 @@ void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInser
             }
 
             int posColocar = i;
-            printf("posColocar = %d\n", posColocar);
+            printf("eh aqui msm posColocar = %d\n", posColocar);
             printf("id = %d, offSet = %d\n", *id, *offSet);
 
             //Inserção ordenada
@@ -373,10 +436,13 @@ void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInser
             pagAtual.chaves[posColocar][1] = *offSet;
             pagAtual.numeroChaves++;
 
+            /*for(i = 0; i < pagAtual.numeroChaves; i++){
+                printf("funcao insercao, chaves[%d][0] = %d\n", i, pagAtual.chaves[i][0]);
+            }*/
+
             //Inserção do filho na posição correta, caso venha de um split
             if((*passouPorSplit) == 1)
             {
-                int i;
                 //Realiza o deslocamento dos filhos
                 for(i = pagAtual.numeroChaves; i > posColocar+1; i--)
                 {

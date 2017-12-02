@@ -21,6 +21,7 @@ int existeArqDados()
         fclose(arquivo);
         return 0;
     }
+
     fclose(arquivo);
     return 1;
 }
@@ -76,11 +77,13 @@ char *parser(char *buffer, int *pos) {
 }
 
 // vai pegar as informações do arquivo de dados para criar a partir dele o arquivo de indices
-void criarArquivoDeIndice(char nomeArqDados[]){
+void criarArquivoDeIndice(){
+    //Abrir os arquivos de dados e índice, o primeiro como leitura e o segundo como escrita
     FILE *arqdados, *arqind;
-    arqdados = fopen (nomeArqDados, "rb");
+    arqdados = fopen (ARQDADOS, "rb");
     arqind = fopen (ARQIND, "wb");
 
+    //Se não deu para abrir um deles
     if (arqdados == NULL) {
        printf ("Houve um erro ao abrir o arquivo de dados.\n");
        return;
@@ -90,22 +93,22 @@ void criarArquivoDeIndice(char nomeArqDados[]){
         return;
     }
 
-    int i;
-    int atualizado = 1;
-    int RRNraiz;
-    int offSet = 0;
-    int pos;
-    int retorno; //valor auxiliar de retorno da função de inserção. Servirá para
-                 //escrever no arquivo de log.
-    long posArq;
-    long tamanhoArquivo;
-    char size;
-    char buffer[1000];
-    tRegistro reg;
+    //Variáveis a serem utilizadas
+    int i, j; //Contadores
+    int atualizado = 1; //Variável para dizer que o arquivo de índice está atualizado
+    int RRNraiz; //Variável para guardar o RRN da página raiz
+    int offSet = 0; //Variável para guardar o offset do próximo registro a ser inserido
+    int pos; //Variável auxiliar para ajudar na leitura do registro
+    long tamanhoArquivo; //Variável para obter o tamanho de um arquivo
+    char size; //Variável para pegar o tamanho de um registro
+    char buffer[1000]; //Vetor para pegar o conteúdo de um registro
+    tRegistro reg; //Registro auxiliar
 
+    //É escrito que o arquivo está atualizado
     fwrite(&atualizado, sizeof(int), 1, arqind);
     fclose(arqind);
 
+    //Lendo o arquivo de dados, registro a registro
     while (fread(&size, sizeof(size), 1, arqdados)) {
         fread(buffer, size, 1, arqdados);
         pos = 1;
@@ -113,45 +116,70 @@ void criarArquivoDeIndice(char nomeArqDados[]){
         strcpy(reg.titulo, parser(buffer, &pos));
         strcpy(reg.genero, parser(buffer, &pos));
 
+        //Pega o tamanho do arquivo de índice
         arqind = fopen(ARQIND, "r+b");
         fseek(arqind, 0, SEEK_END);
         tamanhoArquivo = ftell(arqind);
         fclose(arqind);
 
+        //Se só tiver o bit de estar atualizado ou não
         if(tamanhoArquivo == sizeof(int)){
+            //Será criada a raiz da árvore B
             PAGINA pagNova;
+
+            //Ela tem o id a ser inserido com offSet = 0
             pagNova.numeroChaves = 1;
             pagNova.chaves[0][0] = reg.id;
             pagNova.chaves[0][1] = offSet;
             pagNova.folha = 1;
+
+            //As outras chaves e todos os filhos recebem -1
+            for(i = 1; i < ORDEM-1; i++){
+                for(j = 0; j < 2; j++){
+                    pagNova.chaves[i][j] = -1;
+                }
+            }
             for(i = 0; i < ORDEM; i++){
                 pagNova.filhos[i] = -1;
             }
 
+            //Como é raiz, RRN = 0
             RRNraiz = 0;
+
+            //Abre arquivo de dados e grava o que falta: RRN da raiz, offSet do último inserido e a página em si
             arqind = fopen(ARQIND, "ab");
             fwrite(&RRNraiz, sizeof(RRNraiz), 1, arqind);
+            fwrite(&offSet, sizeof(offSet), 1, arqind);
             fwrite(&pagNova, sizeof(pagNova), 1, arqind);
             fclose(arqind);
         }
+        //Se não, já possui uma ou mais páginas no arquivo de índice
         else{
             int flag = 1; //variável auxiliar para servir como uma verificação se é necessário inserir a chave
-            int passouPorSplit = 0;
-            int RRNnovaPagSplit = -1;//pois o split inicial ocorrerá na folha
-            int offSetAux = offSet;
+            int passouPorSplit = 0; //variável auxiliar que avisará se houve um split
+            int RRNnovaPagSplit = -1; //variável para retornar o RRN da página splitada, e é igual a -1
+                                      //pois o split inicial ocorrerá na folha
+            int offSetAux = offSet; //atribuimos o offset para uma variável auxiliar para não perder o valor
+
             inserir(&reg.id, &offSetAux, RRNraiz, &RRNraiz, &flag, &passouPorSplit, &RRNnovaPagSplit);
         }
 
+        //offSet pula o tamanho do registro para ir para o próximo
         offSet += sizeof(size)+size;
     }
 
-
+    //Operação de escrever no log
     char *mensagem = malloc(100*sizeof(char));
-    sprintf(mensagem, "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados '%s'.\n", nomeArqDados);
+    sprintf(mensagem, "Execucao da criacao do arquivo de indice 'arvore.idx' com base no arquivo de dados '%s'.\n", "dados.dad");
     atualizaArquivoDeLog(mensagem, 1);
     free(mensagem);
+
+    //Fecha arquivos de dados, pois o de índice já foi fechado antes
     fclose (arqdados);
-    fclose (arqind);
+}
+
+void inserirMusicaInd(int id, int offSet){
+
 }
 
 //Insere as musicas no arquivo dados.dad
@@ -209,15 +237,11 @@ void pesquisarMusica(int idBusca){
     fread(&RRNraiz, sizeof(RRNraiz), 1, arq);
     fclose(arq);
 
-    //Obtém o offset do dado pesquisado
     offSet = busca(idBusca, RRNraiz);
-    //Se deu erro na busca,
     if(offSet == ERRO){
         printf("Nao foi possivel abrir o arquivo arvore.idx para buscar o id %d. Erro 0x1001.\n", idBusca);
-        free(mensagem);
         return;
     }
-    //Se não encontrou o dado,
     else if(offSet == NAOENCONTRADO){
         printf("O id %d nao foi encontrado.\n", idBusca);
         sprintf(mensagem, "Chave %d nao encontrada.\n", idBusca);
@@ -230,7 +254,6 @@ void pesquisarMusica(int idBusca){
     arq = fopen(ARQDADOS, "r");
     if(arq == NULL){
         printf("Erro ao abrir o arquivo de dados. Erro 0x1002.\n");
-        free(mensagem);
         return;
     }
 
@@ -253,27 +276,5 @@ void pesquisarMusica(int idBusca){
     atualizaArquivoDeLog(mensagem, 1);
     free(mensagem);
 
-    return;
-}
-
-void removerMusica(int id_in){
-    tRegistro novoRegistro;
-    printf("ainda nao esta pronto");
-
-
-    //Essa parte escreve o que foi feito no arquivo de log
-    char *mensagem = malloc(2*sizeof(int));
-    sprintf(mensagem, " %d", novoRegistro.id);
-    atualizaArquivoDeLog(mensagem, 1);
-    free(mensagem);
-}
-
-void mostrarArvore(){
-    printf("ainda nao esta pronto");
-
-
-    //Essa parte escreve o que foi feito no arquivo de log
-    //sprintf(*mensagem, "%d, %s, %s.", novoRegistro.id, novoRegistro.titulo, novoRegistro.genero);
-    //atualizaArquivoDeLog(mensagem, 1);
     return;
 }
