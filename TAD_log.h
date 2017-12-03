@@ -45,3 +45,4 @@ void atualizaArquivoDeLog(char linhaAdicionada[], int att){
 
     fclose (arquivo);
 }
+

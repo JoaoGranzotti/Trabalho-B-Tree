@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "TAD_arvore_B.h"
+#include "TAD_fila.h"
 
 #define ARQDADOS "dados.dad"
 
@@ -333,7 +333,7 @@ void pesquisarMusica(int idBusca){
     strcpy(reg.titulo, parser(buffer, &pos));
     strcpy(reg.genero, parser(buffer, &pos));
 
-    printf("Registro encontrado:\nid = %d\ntitulo = %s\ngenero = %s\n", reg.id, reg.titulo, reg.genero);
+    printf("Registro encontrado:\nid = %d\nTitulo = %s\nGenero = %s\n\n", reg.id, reg.titulo, reg.genero);
 
     //Escreve o que foi feito no arquivo de log
     sprintf(mensagem, "Chave %d encontrada, offset %d,\n"
@@ -343,4 +343,19 @@ void pesquisarMusica(int idBusca){
     free(mensagem);
 
     return;
+}
+
+void mostrarArvore(){
+    FILE *arq = fopen(ARQIND, "rb");
+
+    if(arq == NULL){
+        printf("Nao foi possivel abrir o arquivo de indice %s. Erro 0x1009.\n", ARQIND);
+        return;
+    }
+
+    int RRNraiz;
+    fseek(arq, sizeof(int), SEEK_SET);
+    fread(&RRNraiz, sizeof(RRNraiz), 1, arq);
+
+    bfs(RRNraiz);
 }

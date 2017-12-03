@@ -30,12 +30,39 @@ typedef struct Pagina{
 void atualizaOffSetCabecalho(int offSet){
     //Aqui, se refere ao arquivo de índices
     FILE *arqind = fopen(ARQIND, "r+b");
+    if(arqind == NULL){
+        printf("Nao foi possivel abrir o arquivo de indice %s. Erro 0x0008.\n", ARQIND);
+        return;
+    }
 
     //Pulamos o bit de atualizado e o RRN raiz
     fseek(arqind, 2*sizeof(int), SEEK_SET);
     fwrite(&offSet, sizeof(offSet), 1, arqind);
 
     fclose(arqind);
+}
+
+//Função auxiliar que retorna a página a partir de um RRN
+PAGINA getPagina(int RRN){
+    //Página auxiliar que servirá como "erro"
+    PAGINA erro;
+    erro.numeroChaves = -1;
+
+    //Abrimos o arquivo de indice e retornamos a página erro caso não consigamos
+    FILE *arq = fopen(ARQIND, "rb");
+    if(arq == NULL){
+        printf("Nao foi possivel abrir o arquivo de indice %s. Erro 0x0009.\n", ARQIND);
+        return erro;
+    }
+
+    fseek(arq, 3*sizeof(int) + RRN*sizeof(PAGINA), SEEK_SET);
+
+    PAGINA retorno;
+    fread(&retorno, sizeof(retorno), 1, arq);
+
+    fclose(arq);
+
+    return retorno;
 }
 
 //Função para inserir uma página no fim do arquivo de índice
@@ -126,7 +153,6 @@ int busca(int id, int RRNatual){
         //Se o id estiver na página,
         if(buscaPag.chaves[i][0] == id){
             //Retorna o offSet do id
-            printf("Funcao busca - id %d encontrado com offSet %d\n", id, buscaPag.chaves[i][1]);
             return buscaPag.chaves[i][1];
         }
         //senão, continua...
@@ -151,17 +177,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     int i, j;
     int flag;
 
-    printf("\nNumero chaves: %d\n", pag->numeroChaves);
-    for(i = 0; i < ORDEM-1; i++){
-        for(j = 0; j < 2; j++){
-            printf("pag->chaves[%d][%d] = %d\n", i, j, pag->chaves[i][j]);
-        }
-    }
-    for(i = 0; i < ORDEM; i++){
-        printf("pag->filhos[%d] = %d\n", i, pag->filhos[i]);
-    }
-    printf("Folha: %d\n\n", pag->folha);
-
     //Posição da chave que será promovida. Válido para qualquer ordem.
     int posPromo = ORDEM/2;
 
@@ -169,8 +184,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     for (i = 0; i < ORDEM-1; i++)
     {
         chaves[i][0] = pag->chaves[i][0];
-        printf("\npag->chaves[%d][0] = %d\n", i, pag->chaves[i][0]);
-        printf("chaves[%d][0] = %d\n\n", i, chaves[i][0]);
         chaves[i][1] = pag->chaves[i][1];
         filhos[i] = pag->filhos[i];
     }
@@ -191,7 +204,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         posColocar = ORDEM-1;
     else
         posColocar = i;
-    printf("posColocar no split = %d\n\n", posColocar);
 
     //Inserção ordenada
     //Shift dos elementos maiores que o a ser inserido
@@ -300,13 +312,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
     //Atualiza a página que sofreu split
     atualizarIndice(pag, RRNpagAtual);
 
-    //print de teste, checar as chaves
-    for(i = 0; i < ORDEM; i++){
-        printf("chaves[%d][0] = %d\n", i, chaves[i][0]);
-    }
-    printf("ORDEM/2 = %d\n", ORDEM/2);
-    printf("chaves[ORDEM/2][0] = %d\n", chaves[ORDEM/2][0]);
-
     //para o caso ORDEM 5, chave 2, intermediária, sobe para o antecessor ao nó atual
     (*idInserir) = chaves[ORDEM/2][0];
     (*offSetInserir) = chaves[ORDEM/2][1];
@@ -319,32 +324,6 @@ void split(PAGINA *pag, int *idInserir, int *offSetInserir, int *RRNraiz, int RR
         atualizaArquivoDeLog(mensagem, LOG_MSG_OFF);
         free(mensagem);
     }
-
-    printf("idInserir = %d, offSetInserir = %d\n", *idInserir, *offSetInserir);
-
-    printf("\nPag antiga:");
-    printf("\nNumero chaves: %d\n", pag->numeroChaves);
-    for(i = 0; i < ORDEM-1; i++){
-        for(j = 0; j < 2; j++){
-            printf("pag->chaves[%d][%d] = %d\n", i, j, pag->chaves[i][j]);
-        }
-    }
-    for(i = 0; i < ORDEM; i++){
-        printf("pag->filhos[%d] = %d\n", i, pag->filhos[i]);
-    }
-    printf("Folha: %d\n\n", pag->folha);
-
-    printf("PagSplit:");
-    printf("\nNumero chaves: %d\n", pagSplit.numeroChaves);
-    for(i = 0; i < ORDEM-1; i++){
-        for(j = 0; j < 2; j++){
-            printf("pag->chaves[%d][%d] = %d\n", i, j, pagSplit.chaves[i][j]);
-        }
-    }
-    for(i = 0; i < ORDEM; i++){
-        printf("pag->filhos[%d] = %d\n", i, pagSplit.filhos[i]);
-    }
-    printf("Folha: %d\n\n", pagSplit.folha);
 
     //se é raiz
     if (RRNpagAtual == (*RRNraiz))
@@ -449,8 +428,6 @@ void inserir(int *id, int *offSet, int RRNatual, int *RRNraiz, int *precisaInser
             }
 
             int posColocar = i;
-            printf("eh aqui msm posColocar = %d\n", posColocar);
-            printf("id = %d, offSet = %d\n", *id, *offSet);
 
             //Inserção ordenada
             //Shift dos elementos maiores que o a ser inserido

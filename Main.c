@@ -101,7 +101,7 @@ int main(){
             printf("\nNão implementado.\n");
             break;
         case 5:
-            printf("\nNão implementado.\n");
+            mostrarArvore();
             break;
         case 6:
             rodando = 0;
