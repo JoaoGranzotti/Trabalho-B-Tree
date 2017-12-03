@@ -58,7 +58,8 @@ int main(){
 
             do{
                 printf("Digite o titulo da musica:\n");
-                scanf("%s", titulo);
+                scanf("%[^\n]s", titulo);
+                setbuf(stdin, NULL);
                 if (entradaValida(titulo))
                 {
                     strcpy(novoRegistro.titulo, titulo);
@@ -69,7 +70,8 @@ int main(){
 
             do{
                 printf("Digite o genero da musica:\n");
-                scanf("%s", genero);
+                scanf("%[^\n]s", genero);
+                setbuf(stdin, NULL);
                 if (entradaValida(genero))
                 {
                     strcpy(novoRegistro.genero, genero);
