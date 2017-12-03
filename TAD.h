@@ -15,14 +15,26 @@
 int existeArqDados()
 {
     FILE *arquivo;
-    arquivo = fopen (ARQDADOS, "r");
+    arquivo = fopen (ARQDADOS, "rb");
     if (arquivo == NULL) {
-        fclose(arquivo);
         return 0;
     }
 
     fclose(arquivo);
     return 1;
+}
+
+//Função que cria o arquivo de dados e o de índice, ambos vazios.
+void criarArqDadosEIndice(){
+    FILE *arquivo;
+    arquivo = fopen(ARQDADOS, "wb");
+
+    //Após criado, não há nada o que fazer
+    fclose(arquivo);
+
+    //O mesmo se faz para o arquivo de índice
+    arquivo = fopen(ARQIND, "wb");
+    fclose(arquivo);
 }
 
 //Função que divide o registro com as barras | e atribui para um vetor
@@ -166,7 +178,7 @@ void inserirMusica(tRegistro novoRegistro){
 
     //Essa parte escreve o que foi feito no arquivo de log: inserção de um elemento
     sprintf(mensagem, "Execucao de operacao de INSERCAO de %d, %s, %s.\n", novoRegistro.id, novoRegistro.titulo, novoRegistro.genero);
-    atualizaArquivoDeLog(mensagem, LOG_MSG_ON);
+    atualizaArquivoDeLog(mensagem, LOG_MSG_OFF);
 
     //Abrimos o arquivo de dados e o de indices para escrever o novo dado
     FILE *arqdados, *arqind;
@@ -189,8 +201,17 @@ void inserirMusica(tRegistro novoRegistro){
     fseek(arqind, 0, SEEK_END);
     tamArq = ftell(arqind);
 
-    //E já voltamos para o começo do arquivo, pulando o bit de atualizado
-    fseek(arqind, sizeof(int), SEEK_SET);
+    //Se o arquivo de índices foi criado na hora que o programa foi executado
+    if(tamArq == 0){
+        //Colocamos o bit de atualizado
+        int att = 1;
+        fwrite(&att, sizeof(att), 1, arqind);
+        tamArq = sizeof(int);
+    }
+    //Senão, somente voltamos para o começo do arquivo e pulamos o bit
+    else{
+        fseek(arqind, sizeof(int), SEEK_SET);
+    }
 
     //Se estiver vazio, ou seja, só tiver o bit de atualizado,
     if(tamArq == sizeof(int)){

@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ARQLOG "log_X.txt"
+#define ARQLOG "log_abellas.txt"
 
 #define LOG_MSG_ON 1
 #define LOG_MSG_OFF 0
@@ -17,18 +17,17 @@
 //#  DO COM O PDF.             #
 //##############################
 
-
 //Abre o arquivo de log, ou o cria se ele não existir
 void criarArquivoDeLog(){
     FILE *arquivo;
     arquivo = fopen(ARQLOG, "w");
     if (arquivo == NULL) {
-       printf ("Houve um erro ao abrir o arquivo de log %s. Erro 0x2000.\n", ARQLOG);
+       printf ("Houve um erro ao criar o arquivo de log %s. Erro 0x2000.\n", ARQLOG);
        return;
     }
     fprintf(arquivo, "Historico das operacoes realizadas no programa:\n");
-    printf ("Arquivo de 'log' criado com sucesso.\n");
     fclose (arquivo);
+    printf("Arquivo de log criado com sucesso.\n");
 }
 
 // coloca as ações no arquivo de log
