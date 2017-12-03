@@ -353,6 +353,12 @@ void mostrarArvore(){
         return;
     }
 
+    char *mensagem;
+    mensagem = malloc(50*sizeof(char));
+
+    sprintf(mensagem, "Execucao de operacao para mostrar a arvore-B gerada:\n");
+    atualizaArquivoDeLog(mensagem, LOG_MSG_ON);
+
     int RRNraiz;
     fseek(arq, sizeof(int), SEEK_SET);
     fread(&RRNraiz, sizeof(RRNraiz), 1, arq);
