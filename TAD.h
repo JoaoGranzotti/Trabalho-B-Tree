@@ -178,7 +178,7 @@ void inserirMusica(tRegistro novoRegistro){
 
     //Essa parte escreve o que foi feito no arquivo de log: inserção de um elemento
     sprintf(mensagem, "Execucao de operacao de INSERCAO de %d, %s, %s.\n", novoRegistro.id, novoRegistro.titulo, novoRegistro.genero);
-    atualizaArquivoDeLog(mensagem, LOG_MSG_OFF);
+    atualizaArquivoDeLog(mensagem, LOG_MSG_ON);
 
     //Abrimos o arquivo de dados e o de indices para escrever o novo dado
     FILE *arqdados, *arqind;
